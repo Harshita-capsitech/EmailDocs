@@ -2,9 +2,9 @@
 
 ## Overview
 
-The Inbox feature provides a single, consistent inbox experience while supporting **both Gmail and Outlook** behind the scenes. The UI and API remain provider-agnostic, while the backend routes each request to the correct provider implementation based on the authenticated user.
+The Inbox feature provides a single, consistent inbox experience while supporting **both Gmail and Outlook** behind the scenes. The UI and API remain **provider-agnostic**, while the system internally routes each request to the correct provider implementation based on the authenticated user.
 
-This document explains how the Inbox works end-to-end (Frontend → API → Provider routing), including paging, filters, sorting, search, and refresh behavior.
+This document explains how the Inbox works end-to-end **from Frontend → Common Inbox API → Provider routing**, covering paging, filters, sorting, search, and refresh behavior.
 
 > 🔗 Related docs:  
 > - [Mail Module Overview](../index.md)  
@@ -14,23 +14,45 @@ This document explains how the Inbox works end-to-end (Frontend → API → Prov
 
 ## End-to-End Flow
 
-### Frontend → Backend → Provider
+### Frontend → Common Inbox API → Provider
 
 1. The Inbox screen loads emails using `useMail()` (MailContext).
 2. `MailContext.getItems()` calls `EmailService.getInboxMessages(...)`.
-3. The backend endpoint `GET /Inbox` receives the request.
-4. The backend reads the authenticated user (`User.GetUserId()`), loads access tokens, and detects the provider.
-5. The backend routes the request:
-   - Outlook → Microsoft Graph provider method
-   - Gmail → Google provider method
-6. The API returns a unified response model which the frontend groups and renders.
+3. All folder-based email requests (Inbox, Sent, Drafts, etc.) are routed through a **single common API**:
+/api/inboxapi|
+4. The API identifies the authenticated user from the Bearer token.
+5. Based on the user configuration, the API determines the email provider.
+6. The request is internally routed:
+- Outlook → Microsoft provider logic
+- Gmail → Google provider logic
+7. The API always returns a **unified response model**, which the frontend groups and renders.
 
-Provider routing (conceptual):
-```
-User Request → /Inbox API → Provider Flag Check
-                            ├─→ Outlook Provider (Microsoft)
-                            └─→ Gmail Provider (Gmail API)
-```
+Conceptual routing:
+
+
+User Request → /api/inboxapi → Provider Flag Check
+├─→ Outlook Provider
+└─→ Gmail Provider
+
+---
+
+## Common API for All Folders
+
+A **single API** (`/api/inboxapi`) is used for **all mail folders**, including:
+
+- Inbox
+- Sent Items
+- Drafts
+- Important
+- Custom folders
+
+Folder behavior is controlled using request parameters (such as folder id/type), not separate APIs.
+
+This ensures:
+
+- Consistent behavior across folders
+- Shared paging and filtering logic
+- Easier maintenance and extensibility
 
 ---
 
@@ -40,335 +62,240 @@ User Request → /Inbox API → Provider Flag Check
 
 The Inbox UI is implemented in `NewInboxEmails` and includes:
 
-- Header + filter menu
+- Header and filter menu
 - Toggle buttons: **Unread / Read / All**
-- Search input (debounced)
+- Debounced search input
 - Grouped infinite list (`ControlledGroupList`)
-- Right-click context menu actions
+- Context menu actions (right-click)
 
 ---
 
 ## View Toggles (Unread / Read / All)
 
-The toggle is controlled through `listParams.inboxViewType`:
+Inbox view toggles are controlled through `listParams.inboxViewType`:
 
 - `unread`
 - `read`
 - `all`
 
-When a toggle changes:
+When the view changes:
 
 - `selectedMail` is cleared
-- `nextPageToken` is reset
-- emails are refetched for the new view
+- Paging state (`nextPageToken`) is reset
+- Emails are refetched using the common Inbox API
 
 ---
 
 ## Search
 
-Search is implemented using a debounced input (500ms).  
-When the folder changes, search is reset.
+Search is implemented using a debounced input (500ms).
 
 Behavior:
 
-- User types in search box
-- `updateParams({ search: value, nextPageToken: undefined })` is invoked (debounced)
-- `onSearch()` can trigger a fetch using the updated search term
+- User types in the search box
+- `updateParams({ search, nextPageToken: undefined })` is called
+- The next fetch uses the updated search term
+- Search is reset automatically when switching folders
 
 ---
 
 ## Grouped Infinite List
 
-Inbox uses a grouped list renderer (`ControlledGroupList`).  
-Emails are grouped according to the active sort grouping logic (usually by date buckets like Today/Yesterday).
+Inbox uses a grouped list renderer (`ControlledGroupList`).
+
+- Emails are grouped based on the active sort mode
+- Default grouping is by **date buckets** (Today, Yesterday, etc.)
 
 Infinite scroll behavior:
 
-- `onLoadMore` calculates the start offset using `getUniqueItemCount(...)`
-- calls `onScroll(start, PAGE, 'inbox')`
-- backend returns more items using continuation tokens (if available)
+- `onLoadMore` calculates the offset
+- Calls `onScroll(start, PAGE, 'inbox')`
+- Additional data is fetched via continuation tokens
+- Results are merged without duplicates
 
 ---
 
 ## Context Menu Actions
 
-Right-clicking an email opens a contextual menu with:
+Right-clicking an email opens a contextual menu with the following actions.
 
 ### Archive
-- Calls `EmailService.moveFolder(id, 'archive')`
-- Updates local cache via `updateEmails(..., EmailUpdateTypes.archive)`
+
+- Moves the email out of Inbox
+- Updates local cache using `EmailUpdateTypes.archive`
 
 ### Delete
-- Calls `EmailService.moveFolder(id, 'deleteditems')`
-- Updates local cache via `updateEmails(..., EmailUpdateTypes.archive)` (current code treats delete similarly)
+
+- Moves the email to Deleted Items
+- Updates local cache and removes it from the list
 
 ### Mark Read / Unread
-- Calls `EmailService.updateMessage(id, { isRead, type: ReadUnRead })`
-- Updates local cache via `updateEmails(..., EmailUpdateTypes.readUnread)`
+
+- Updates read state
+- If the current view is filtered (Unread/Read), items may disappear automatically
 
 ### Flag
-Supports presets and explicit updates:
+
+Supports:
 
 - Today
 - Tomorrow
-- This week
-- Next week
-- Mark complete
-- Clear flag
+- This Week
+- Next Week
+- Mark Complete
+- Clear Flag
 
-Calls:
-- `EmailService.updateMessage(id, { flagModel, type: Flag })`
-
-Updates local cache via:
-- `updateEmails(..., EmailUpdateTypes.flag)`
+Updates flag state locally using `EmailUpdateTypes.flag`.
 
 ### Categories
-- Assign category → `EmailService.updateMessage(id, { categoryId, type: Category })`
-- Clear category → `EmailService.updateMessage(id, { categoryId: undefined, type: Category })`
 
-Updates local cache via:
-- `updateEmails(..., EmailUpdateTypes.category)`
+- Assign category
+- Clear category
+
+Local state merges categories safely and prevents duplicates.
 
 ---
 
 ## Folder-Specific View Logic
 
-The fetch logic chooses the view type based on the folder:
+Although the API is common, the frontend applies **folder-specific view logic**:
 
 - Inbox → `inboxViewType`
 - Drafts → `draftViewType`
 - Sent Items → `sentViewType`
 - Other folders → `viewType`
 
-This ensures each folder can maintain its own Read/Unread/All state.
+This allows each folder to maintain its own Read / Unread / All state.
 
 ---
 
 ## Paging and Continuation Tokens
 
-Inbox supports paging using a continuation token:
+Paging is handled using continuation tokens returned by the common Inbox API.
 
-- Token is stored per folder cache pack:
-  - `inboxMails.nextToken`
-  - `sentMails.nextToken`
-  - `draftMails.nextToken`
+Tokens are stored per folder cache:
 
-On scroll:
+- `inboxMails.nextToken`
+- `sentMails.nextToken`
+- `draftMails.nextToken`
 
-- If no token exists, scrolling stops (no extra fetch)
-- If token exists, the next page is fetched and merged into existing grouped results
-- Duplicates are avoided by checking email `id`
+Behavior:
+
+- If no token exists, scrolling stops
+- If a token exists, the next page is fetched
+- Items are merged without duplication using email `id`
 
 ---
 
 ## Sorting and Grouping
 
-Inbox grouping is done by `sortEmailsOptimized(...)`.
+Sorting and grouping are handled on the frontend using `sortEmailsOptimized(...)`.
 
 ### Supported Sort Modes
 
-- `date` (default grouping):
+- `date` (default)
   - Today
   - Yesterday
   - This Week
   - Last Week
   - This Month
   - Last Month
-  - Month names (earlier months)
-  - Year buckets (older mail)
+  - Month names
+  - Year buckets
 - `category`
 - `importance`
 - `flagStatus`
 - `from`
-- `subject` (fallback grouping)
+- `subject`
 
-Within each group, items are sorted by date according to `sortOrder`.
+Within each group, emails are sorted by date based on `sortOrder`.
 
 ---
 
 ## Refresh Behavior
 
-Inbox refreshes using multiple strategies.
+Inbox refresh uses multiple strategies to keep data up to date.
 
 ### Inbox Polling (Every 30 Seconds)
 
-When the current folder is Inbox:
+When Inbox is the active folder:
 
-- `setInterval` triggers every 30 seconds
-- Calls `EmailService.refreshInbox(0, 10, folderId)`
-- New messages are merged into the current grouped list
-- Folder counters are updated for Inbox if new mails arrive
-
-### Refresh on Focus / Online
-
-When the user returns to the tab or connectivity changes:
-
-- Triggers an auto refresh with throttling
-- Calls `getItems(0, 100, true)` to reconcile state
+- Periodic polling fetches the latest emails
+- New emails are merged at the top
+- Folder counters are updated automatically
 
 ---
 
-## Backend API
+### Refresh on Focus / Connectivity Change
 
-### Endpoint
-```http
-GET /Inbox
+An automatic refresh is triggered when:
+
+- The browser tab becomes visible
+- Network connectivity changes
+- Email mutations occur
+
+All refresh actions are throttled to avoid excessive API calls.
+
+---
+
+## Common API Reference
+
+All folder-based email operations use:
+
+
+GET /api/inboxapi
+
 Authorization: Bearer <token>
-```
 
-### Authorization
-```csharp
-[Authorize(Roles = "ADMIN,MANAGER,STAFF")]
-```
+Key characteristics:
 
-The backend derives the authenticated user from the token using `User.GetUserId()` and loads provider tokens from storage.
-
-### Backend Query Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| start | int | 0 | Paging start index |
-| length | int | 35 | Paging length |
-| search | string | null | Search query |
-| userId | string | "" | User id (backend also uses auth user id) |
-| inboxType | string | "inbox" | Folder name/type |
-| isImportant | bool | false | Important-only filter |
-| viewType | string | "" | unread/read/all |
-| isFlagged | bool? | null | Filter flagged |
-| isStarred | bool? | null | Filter starred (mostly Gmail) |
-| hasAttachment | bool? | null | Filter attachments |
-| hasMentioned | bool? | null | Filter mentions |
-| categoryType | string | null | Filter category |
-| sortBy | string | "Date" | Sort field |
-| nextPageToken | string? | null | Continuation token |
-| startDate | string? | null | Date range start |
-| endDate | string? | null | Date range end |
-
----
-
-## Provider Routing (Backend)
-
-The backend loads tokens and chooses provider:
-
-### Load access token:
-```csharp
-ApplicationUserAccessTokens accessToken = await db.GetByUserId(User.GetUserId());
-```
-
-### If provider == Outlook:
-
-Build Microsoft Graph client via `_graphSdkHelper.GetAuthenticatedClient(accessToken)`
-
-Call:
-```csharp
-MicrosoftController.GetMessages(...)
-```
-
-### If provider == Gmail:
-
-Instantiate `GoogleController`
-
-Call:
-```csharp
-controller.GetMessageList(...)
-```
-
-### If unknown provider:
-
-Return "Unsupported email provider"
-
----
-
-## Outlook Provider Path
-
-When provider is Outlook:
-
-- Uses Microsoft Graph client
-
-Calls:
-```csharp
-MicrosoftController.GetMessages(
-  client,
-  start,
-  length,
-  search,
-  userId,
-  inboxType,
-  isImportant,
-  viewType,
-  isFlagged,
-  hasAttachment,
-  hasMentioned,
-  categoryType,
-  nextPageToken,
-  sortBy,
-  startDate,
-  endDate
-);
-```
-
----
-
-## Gmail Provider Path
-
-When provider is Gmail:
-
-Calls:
-```csharp
-controller.GetMessageList(
-  User.GetUserId(),
-  start,
-  length,
-  search,
-  viewType,
-  inboxType,
-  isImportant,
-  isStarred,
-  hasAttachment,
-  categoryType,
-  nextPageToken,
-  startDate,
-  endDate
-);
-```
+- Single API for all folders
+- Provider-agnostic
+- Folder behavior controlled by parameters
+- Unified response format for Gmail and Outlook
 
 ---
 
 ## Response Shape
 
-The API responds with:
-```csharp
-ApiResponse<PagedData<EmailsListItem>>
-```
+The common Inbox API returns a unified paged response containing:
 
-The response typically contains:
+- `items`: list of email items
+- `continuationToken`: optional token for next page
 
-- `items`: the list of email items
-- `continuationToken`: optional token to fetch the next page
-
-The frontend transforms the returned list into grouped results using `sortEmailsOptimized(...)`.
+The frontend transforms the returned items into grouped lists using `sortEmailsOptimized(...)`.
 
 ---
 
 ## Common UI State Updates
 
-### Read/Unread State Update
-- Server update happens via `EmailService.updateMessage(...)`
-- UI updates via `updateEmails(..., EmailUpdateTypes.readUnread)`
-- If current view is filtered (e.g., unread), items may be removed when the state no longer matches.
+### Read / Unread Updates
 
-### Delete/Archive Update
-- Server update happens via `EmailService.moveFolder(...)`
-- UI removes item from grouped caches
-- Triggers auto refresh to reconcile counts and server state
+- Local state updates immediately
+- Filtered views auto-adjust if the item no longer matches
 
-### Flag Update
-- Server update happens via `EmailService.updateMessage(... Flag ...)`
-- UI updates flag status and selected mail flag status (if open)
+### Delete / Archive Updates
 
-### Category Update
-- Server update happens via `EmailService.updateMessage(... Category ...)`
-- UI merges the category into local categories list and prevents duplicates
-- Clear category resets categories array
+- Item is removed from local grouped caches
+- Auto refresh reconciles counts and server state
+
+### Flag Updates
+
+- Flag state updates in list and detail view (if open)
+
+### Category Updates
+
+- Categories are merged locally
+- Clearing a category resets the category list for that email
 
 ---
+
+## Key Takeaways
+
+👉 [One common API](../API/InboxApi.md) powers all folders
+- Frontend logic is fully provider-agnostic
+- Gmail and Outlook behave identically in the UI
+- Paging, filtering, and grouping are consistent everywhere
+- The architecture is scalable and easy to extend
+
+This design ensures a predictable, high-performance inbox experience regardless of the underlying email provider.
