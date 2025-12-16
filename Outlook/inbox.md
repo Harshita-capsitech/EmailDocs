@@ -7,8 +7,8 @@ The Inbox feature provides a single, consistent inbox experience while supportin
 This document explains how the Inbox works end-to-end (Frontend → API → Provider routing), including paging, filters, sorting, search, and refresh behavior.
 
 > 🔗 Related docs:  
-> - [Mail Module Overview](index.md)  
-> - [Outlook Provider](outlook.md)
+> - [Mail Module Overview](../index.md)  
+> - [Outlook Provider](./outlook.md)
 
 ---
 
@@ -28,7 +28,7 @@ This document explains how the Inbox works end-to-end (Frontend → API → Prov
 Provider routing (conceptual):
 ```
 User Request → /Inbox API → Provider Flag Check
-                            ├─→ Outlook Provider (Microsoft Graph)
+                            ├─→ Outlook Provider (Microsoft)
                             └─→ Gmail Provider (Gmail API)
 ```
 
