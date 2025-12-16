@@ -57,6 +57,11 @@ The backend automatically:
 - Support for Outlook.com and Microsoft 365 accounts
 - Access to Outlook-specific features (focused inbox, categories)
 
+<p >
+  <img src="./Images/overAllFlowChart.png" alt="Email Routing Architecture" width="600">
+</p>
+
+
 ### Unified Experience
 Regardless of your provider, you'll experience:
 - Consistent UI and navigation
@@ -203,104 +208,6 @@ When connected to Outlook, you also get:
 ```
 
 ---
-
-## Best Practices for Users
-
-### General Workflow
-- Use folders for stable organization and search for speed
-- Keep drafts for long responses and attach files early to avoid missing them
-- Sort by date for triage, then filter unread to finish the loop
-
-### Cross-Provider Usage
-- Your mail experience remains consistent when switching between accounts
-- Folder structures are automatically mapped between Gmail and Outlook conventions
-- Search syntax is normalized—no need to learn provider-specific operators
-
-### Performance Tips
-- The system caches provider tokens for faster access
-- Bulk operations are optimized per provider for speed
-- Attachments are streamed efficiently from source provider
-
----
-
-## Configuration and Setup
-
-### Adding an Email Account
-
-1. **Initial Login**: Authenticate with your organizational credentials
-2. **Provider Selection**: Choose Gmail or Outlook during account setup
-3. **OAuth Authorization**: Grant permissions to access your email provider
-4. **Account Linking**: Your `userId` is linked to the provider and OAuth tokens
-5. **Ready to Use**: Start using the unified mail interface immediately
-
-### Switching Providers
-If your organization supports multiple accounts:
-- Each account maintains its own provider configuration
-- Switch between accounts seamlessly in the UI
-- The controller automatically routes to the correct provider per account
-
----
-
-## What's Next (Typical Enhancements)
-
-Roadmap items vary by deployment, but commonly include:
-- **Rules and Automations**: Auto-move, auto-tag (leveraging both Gmail filters and Outlook rules)
-- **Advanced Search**: Enhanced search operators unified across providers
-- **Snooze/Reminders**: Cross-provider message scheduling
-- **Categories and Labels**: Unified tagging system
-- **Offline Mode**: Local caching for faster navigation
-- **Multi-Account Support**: Manage multiple Gmail and Outlook accounts simultaneously
-- **Calendar Integration**: Link emails to calendar events (Google Calendar + Outlook Calendar)
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue**: "Unable to connect to email provider"
-- **Solution**: Check that your OAuth tokens haven't expired. Re-authenticate if needed.
-
-**Issue**: "Emails not syncing"
-- **Solution**: Verify your internet connection and that the provider service is operational.
-
-**Issue**: "Attachment download fails"
-- **Solution**: Ensure the attachment still exists in the source email and your provider account has access.
-
-**Issue**: "Search returns no results"
-- **Solution**: Check your search filters and try broadening your query. Provider-specific indexing delays may occur.
-
----
-
-## Support
-
-If you encounter issues such as:
-- Missing emails or sync delays
-- Attachment errors or download failures
-- Provider connection problems
-- Unexpected behavior with folders or search
-
-Contact your system administrator or product support with:
-- Your `userId` or account email
-- Email provider (Gmail or Outlook)
-- Folder name and approximate date/time
-- Subject/sender information (if available)
-- Any error message shown in the UI
-- Browser console errors (if technical)
-
-Our support team can trace requests through the unified controller to identify provider-specific issues and resolve them quickly.
-
----
-
-## Technical Summary
-
-The Mail module provides a **provider-agnostic email experience** through intelligent routing:
-
-- **One Controller**: Unified `emails` controller handles all operations
-- **Two Providers**: Separate implementations for Gmail and Outlook
-- **Smart Routing**: Provider flag determines which method to call
-- **Consistent API**: Same endpoints and responses regardless of provider
-- **Secure Access**: Token-based auth with `userId` for provider lookup
 
 This architecture ensures you get a seamless, consistent email experience while leveraging the full power of both Gmail and Outlook platforms.
 For detailed information about Outlook integration, API behavior, and provider-specific features, refer to:  
