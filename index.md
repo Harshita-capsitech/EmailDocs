@@ -303,3 +303,5 @@ The Mail module provides a **provider-agnostic email experience** through intell
 - **Secure Access**: Token-based auth with `userId` for provider lookup
 
 This architecture ensures you get a seamless, consistent email experience while leveraging the full power of both Gmail and Outlook platforms.
+For detailed information about Outlook integration, API behavior, and provider-specific features, refer to:  
+👉 [Outlook Provider Documentation](./outlook.md)
