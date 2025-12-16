@@ -38,7 +38,7 @@ The system automatically routes email requests to the Outlook provider based on 
 
 > 📘 **Detailed Information**  
 > For in-depth details about inbox behavior, folder synchronization, and provider-specific handling,  
-> refer to: 👉 [Inbox & Folder Management](inbox.md)
+> refer to: 👉 [Inbox & Folder Management](./Folders/inbox.md)
 
 ---
 
