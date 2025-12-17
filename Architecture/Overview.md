@@ -19,10 +19,23 @@ When you log into the Mail module:
 
 ### Provider-Specific Routing
 The `emails` controller acts as an intelligent router:
-```
-User Request → emails Controller → Provider Flag Check
-                                   ├─→ Google Provider (Gmail API)
-                                   └─→ Microsoft Provider (Outlook API)
+
+```mermaid
+flowchart LR
+  UR[User Request] --> EC[Emails Controller]
+  EC --> PFC{Provider Flag Check}
+
+  PFC -->|Google| GP[Google Provider]
+  GP --> GA[Gmail API]
+
+  PFC -->|Microsoft| MP[Microsoft Provider]
+  MP --> OA["
+  <a href='../Providers/Outlook/outlook.md'>Outlook API
+    
+  </a>"]
+
+
+
 ```
 
 - **Single Entry Point**: All email operations (read, send, delete, search) go through the same controller endpoint
