@@ -25,6 +25,58 @@ The system automatically routes email requests to the Outlook provider based on 
 - Organization-managed Exchange accounts (where permitted)
 
 ---
+# Mail Module – Frontend Architecture Highlights
+
+## Unified State Hub
+**MailContext** serves as the single source of truth, managing:
+- Folder states  
+- Email lists  
+- Selections  
+- Background polling  
+
+All of this is exposed through the `useMail()` hook, ensuring predictable and centralized state management.
+
+---
+
+## Provider-Agnostic Design
+The frontend is fully decoupled from specific email providers such as **Gmail** and **Outlook** by:
+- Using a **normalized email data structure**
+- Routing all requests through a central **EmailService**
+
+This guarantees consistent behavior regardless of the underlying provider.
+
+---
+
+## Efficient Caching
+Each mail folder maintains its own:
+- Cache
+- Paging tokens
+- View parameters  
+
+This design enables:
+- Fast folder navigation
+- Reduced API calls
+- Better scalability for large mailboxes
+
+---
+
+## Optimized Client-Side Logic
+To ensure a highly responsive UI and consistent behavior across providers:
+- Sorting
+- Grouping (by date, category, etc.)
+- Filtering  
+
+are handled entirely on the client side.
+
+---
+
+## Robust Mutation Handling
+Email actions such as:
+- Archiving
+- Flagging
+- Marking read/unread  
+
+use **cache-safe updates** and **debounced refreshes**, keeping the UI synchronized with the server without introducing performance bottlenecks.
 
 ## Core Outlook Features
 
@@ -38,7 +90,7 @@ The system automatically routes email requests to the Outlook provider based on 
 
 > 📘 **Detailed Information**  
 > For in-depth details about inbox behavior, folder synchronization, and provider-specific handling,  
-> refer to: 👉 [Inbox & Folder Management](./Folders/inbox.md)
+> refer to: [Inbox & Folder Management](./Folders/inbox.md)
 
 ---
 

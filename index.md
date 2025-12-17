@@ -136,6 +136,7 @@ When connected to Outlook, you also get:
 - Outlook categories and color coding
 - Integration with Microsoft 365 features
 - Exchange-based shared mailbox support
+- [Outlook Provider Documentation](./Outlook/outlook.md)
 
 ---
 
@@ -211,4 +212,3 @@ When connected to Outlook, you also get:
 
 This architecture ensures you get a seamless, consistent email experience while leveraging the full power of both Gmail and Outlook platforms.
 For detailed information about Outlook integration, API behavior, and provider-specific features, refer to:  
-👉 [Outlook Provider Documentation](./Outlook/outlook.md)
