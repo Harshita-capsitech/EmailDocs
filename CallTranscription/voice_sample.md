@@ -24,61 +24,102 @@ It is integrated into the Profile section and is designed with clear separation 
 
 The module is composed of three logical layers:
 
-1. **Presentation Layer**
-   - VoiceRecordingModal
-   - Profile UI
+### Presentation Layer
+- VoiceRecordingModal
+- Profile UI
 
-2. **Verification Layer**
-   - AI audio verification service (`/sample`)
+### Verification Layer
+- AI audio verification service (/sample)
 
-3. **Persistence Layer**
-   - AuthController.UploadAudio
-   - MongoDB (ApplicationUser collection)
+### Persistence Layer
+- AuthController.UploadAudio
+- MongoDB (ApplicationUser collection)
 
 This layered approach ensures that biometric data does not leak into core authentication services.
 
 ---
 
+## 3. DFD (Data Flow Diagram)
+
+```mermaid
+%%{ init: { "themeVariables": { "background": "transparent" } } }%%
 flowchart LR
-    U[User] -->|Speaks sample text| B[Browser / UI]
-    
-    B -->|Raw audio stream| VR[Voice Recording Module]
-    VR -->|Verified audio (WAV)| PS[ProfileService]
+    %% User and UI
+    U@{ shape: circle, label: "`User`" }
+    B@{ shape: stadium, label: "`Browser Profile UI`" }
+    VR@{ shape: stadium, label: "`Voice Module`" }
 
-    PS -->|FormData (audio + metadata)| AI[AI Verification Service<br/>/sample]
-    AI -->|Verification status| PS
+    %% Backend services
+    subgraph Backend [Backend Services]
+        direction TB
+        PS@{ shape: rect, label: "`Profile Service`" }
+        AI@{ shape: rect, label: "`AI Voice Verification`" }
+        AC@{ shape: rect, label: "`Auth Controller`" }
+    end
 
-    PS -->|Verification flag| AC[AuthController<br/>/Auth/UploadAudio]
-    AC -->|Persist voice status| DB[(MongoDB<br/>ApplicationUser)]
+    %% Data layer
+    DB@{ shape: cyl, label: "`MongoDB`" }
 
-    DB -->|Voice verification state| UI[Profile UI]
+    %% Data/Action flow with animated arrows
+    U e1@-->|"Voice Input"| B
+    B e2@-->|"Raw Stream"| VR
+    VR e3@-->|"WAV Data"| PS
+    PS e4@-->|"Verification Call"| AI
+    AI e5@-->|"Result"| PS
+    PS e6@-->|"Status Flag"| AC
+    AC e7@-->|"Persist"| DB
+    DB e8@-. "State Sync" .-> B
+    B e9@-->|"Status Fetch"| DB
 
+    %% Animation for main data flows
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true, animation: fast }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e9@{ animate: true }
+
+    %% Subgraph: Browser Layer (visual only)
+    subgraph Frontend ["Frontend"]
+        direction TB
+        B
+        VR
+    end
+
+    %% Styles for documentation clarity
+    classDef backend fill:none,stroke:#5B9BD5,stroke-width:2px
+    classDef frontend fill:none,stroke:#70AD47,stroke-width:2px
+    class Backend,AI,AC,PS backend
+    class Frontend,B,VR frontend
+
+    %% Remove any explicit white style/fill
+```
+
+---
 
 ## 4. Process Flow
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant V as VoiceRecordingModal
-    participant PS as ProfileService
-    participant AI as AI Verification API
-    participant AC as AuthController
-    participant DB as MongoDB
+    autonumber
+    actor User
+    participant Voice
+    participant AI
 
-    U->>V: Start recording
-    V->>V: Request mic permission
-    V->>V: Capture audio chunks
-    U->>V: Stop recording / auto-stop
-    V->>V: Convert WebM → WAV
-    V->>PS: checkAudio(FormData)
-    PS->>AI: POST /sample
-    AI-->>PS: { status, message }
-    PS->>AC: POST /Auth/UploadAudio (true/false)
-    AC->>DB: Update user.voice
-    DB-->>AC: ModifiedCount
-    AC-->>PS: ApiResponse
-    PS-->>V: Verification outcome
-    V-->>U: Success / failure UI
+    User->>+Voice: Start Recording
+    activate Voice
+    Note right of Voice: Capturing & converting audio
+    Voice-->>-User: Recording Ready
+    deactivate Voice
+
+    Voice->>+AI: Verify Audio
+    activate AI
+    AI-->>-Voice: Verified / Not Verified
+    deactivate AI
+
+    Voice-->>User: Show Result ✅
 ```
 
 ---
@@ -110,48 +151,39 @@ erDiagram
 Represents the verification state of a user’s voice identity.
 
 Fields:
-- **Recorded**: Indicates whether verification succeeded
-- **On**: Timestamp of last successful verification
+- Recorded: Indicates whether verification succeeded
+- On: Timestamp of last successful verification
 
 This structure is intentionally minimal to reduce biometric footprint.
 
 ---
 
-## 7. Authentication & APIs
+## 7. Authentication and APIs
 
 ### Frontend APIs (ProfileService)
 
-#### checkAudio
-- Endpoint: `/sample`
+checkAudio
+- Endpoint: /sample
 - Method: POST
 - Payload: multipart/form-data
-- Content:
-  - WAV audio file
-  - Agent metadata (id, name)
-- Responsibility:
-  - AI-based voice verification
+- Responsibility: AI-based voice verification
 
-#### uploadAudio
-- Endpoint: `/Auth/UploadAudio`
+uploadAudio
+- Endpoint: /Auth/UploadAudio
 - Method: POST
 - Payload: boolean
-- Responsibility:
-  - Persist verification result
+- Responsibility: Persist verification result
 
 ---
 
 ### Backend API (AuthController)
 
-#### POST /Auth/UploadAudio
+POST /Auth/UploadAudio
 
 Behavior:
 1. Validates authenticated user
-2. Filters MongoDB document using:
-   - PracticeId
-   - UserId
-3. Updates:
-   - user.voice.recorded
-   - user.voice.on
+2. Filters MongoDB document using PracticeId and UserId
+3. Updates user.voice.recorded and user.voice.on
 
 No raw audio is stored or processed at this layer.
 
@@ -161,21 +193,21 @@ No raw audio is stored or processed at this layer.
 
 - Raw audio never reaches AuthController
 - AI service is isolated and accessed via OIDC
-- Voice status is boolean, not biometric
+- Voice status is boolean, not biometric data
 - MongoDB stores metadata only
 - Browser permissions strictly enforced
 
 ---
 
-## 9. Error Handling & Recovery
+## 9. Error Handling and Recovery
 
-### Frontend
+Frontend:
 - Permission denial handling
 - Unsupported browser detection
 - Silent audio detection
 - Retry and re-record support
 
-### Backend
+Backend:
 - MongoDB update validation
 - Graceful failure on no modification
 - Standard ApiResponse error propagation
@@ -184,21 +216,17 @@ No raw audio is stored or processed at this layer.
 
 ## 10. Testing Guide
 
-### Frontend Testing
+Frontend Testing:
 - Microphone permission flows
 - Auto-stop after 60 seconds
 - Success and failure UI paths
 - Re-record functionality
 
-### API Testing
+API Testing:
 POST /Auth/UploadAudio
-Body: true / false
+Body: true or false
 
-Expected:
-- status = true
-- result contains updated voice object
-
-### Database Validation
+Database Validation:
 Query ApplicationUser.Voice fields directly in MongoDB.
 
 ---
@@ -230,19 +258,19 @@ Query ApplicationUser.Voice fields directly in MongoDB.
 
 ---
 
-## 14. Version & Change Log
+## 14. Version and Change Log
 
-### v1.0.0
+v1.0.0
 - Initial voice verification
 - AI integration
 - MongoDB persistence
 
-### v1.1.0
+v1.1.0
 - WAV conversion
 - Auto-stop recording
 - Improved error handling
 
-### v1.2.0
+v1.2.0
 - UI sync improvements
 - Re-record flow
 - Background user refresh
