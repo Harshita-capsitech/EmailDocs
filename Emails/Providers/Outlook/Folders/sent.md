@@ -251,9 +251,8 @@ This module assumes authentication is handled **outside** this context (e.g., ap
 - Aborted fetches should throw `AbortError` (and are treated as non-errors).
 
 ### APIs
-Paste your API documentation link here:
 
-**API Link:** `PASTE_LINK_HERE`
+**API Link:** ``
 
 #### Endpoints used by this module (logical)
 - `getFolders()` → folder navigation list
@@ -263,8 +262,6 @@ Paste your API documentation link here:
 - `getMessage(id)` → detail fetch
 - `updateMessage(id, model)` → read/unread, flag, category, star (depending on `type`)
 - `moveFolder(id, target)` → archive/delete
-
-> Note: the screenshot indicates folder APIs like `GET /Emails/Folders` and `POST /Emails/Folders`. Ensure your `EmailService.getFolders()` matches the backend route contract.
 
 ---
 
