@@ -1,323 +1,189 @@
-# Mail Module (MailProvider Context + Sent Items UI)
 
-**Primary artifacts**
-- `Contexts/MailContext.tsx` — client-side state management, caching, sorting, filtering, polling/refresh.
-- `Components/Admin/Emails/NewSentEmails.tsx` — “Sent Items” list UI with filters, search, infinite scroll, and context menu actions.
-
-**Audience**: Backend, Frontend, and Integration engineers  
-**Scope**: End-to-end data flow from UI → context/state → EmailService APIs, plus cache/refresh strategy and mutation propagation.
-
----
+# Technical Documentation for **Mail System Module**
 
 ## 1. Overview
 
-### Purpose
-This module provides the **email client state layer** and a **Sent Items list UI** that together deliver:
-- Folder discovery and navigation (Inbox/Sent/Drafts/…)
-- Paginated message listing with caching and infinite scroll
-- Local filtering/sorting + view toggles (Unread/Read/All per folder)
-- Message detail fetching
-- Mutations (read/unread, flag, category, star, delete, archive) with UI-first updates
-- Auto-refresh for Inbox (polling + focus/online refresh)
+### High-level Purpose of the Module:
+The **Mail System Module** is designed to provide an interface for managing emails, including reading, filtering, categorizing, flagging, and archiving emails within an application. It facilitates the seamless interaction between different folders (Inbox, Sent, Drafts, etc.), providing users with the ability to perform CRUD operations on emails while maintaining system performance through features like pagination, sorting, and caching.
 
-### Problems it solves
-- **Single source of truth**: folder selection, list parameters, selection state, loading state.
-- **Per-folder continuity**: remembers parameters per folder (`folderParamsRef`) and restores them when returning.
-- **Performance**: folder-scoped caches (`inboxMails`, `sentMails`, `draftMails`) provide instant UI reuse and reduce “spinner fatigue”.
-- **Consistency under concurrency**: `AbortController` cancels in-flight list fetches when user changes params/folder rapidly.
-- **Resilience**: local, optimistic updates keep UI consistent even if server reconciliation arrives later (auto-refresh).
+### What Problems It Solves:
+- Provides a central hub for accessing and managing multiple email accounts and folders.
+- Supports filtering of emails based on criteria such as read/unread, flagged, important, or attachments.
+- Efficiently handles large volumes of emails through caching, pagination, and auto-refresh features.
+- Integrates with third-party services to provide features like email flagging and categorization.
 
-### Key responsibilities
-**MailProvider / context**
-- Initial boot: folders + categories load, default folder selection.
-- List orchestration: `getItems()` fetches messages, merges groups, updates caches, manages continuation tokens.
-- Parameter management: `updateParams()` and per-folder viewType selection logic.
-- Mutation propagation: `updateEmails()` applies changes across combined list + relevant folder cache, then schedules refresh.
-- Background refresh: Inbox polling every 30s and refresh on `online`/visibility changes.
-
-**NewSentEmails UI**
-- Renders the “Sent Items” folder list using `ControlledGroupList`.
-- Supports:
-  - View toggles: Unread/Read/All (sentViewType)
-  - Search: debounced input + explicit onSearch
-  - Infinite scroll: `onLoadMore` → context `onScroll()`
-  - Context menu actions: archive/delete/read-unread/flag/category
+### Key Responsibilities:
+- **Fetching Email Data**: Retrieves emails from the mail server (e.g., Outlook) and processes them based on various filters.
+- **Email Display**: Displays emails in the user interface with options to sort, filter, and search.
+- **Email Actions**: Provides actions like marking as read/unread, archiving, deleting, flagging, and categorizing emails.
+- **Folder Management**: Allows users to switch between different email folders (Inbox, Sent, Drafts) and apply filters based on the folder.
+- **Auto-refresh**: Ensures the email data is kept up to date by periodically polling for new messages.
 
 ---
 
-## 2. DFD
+## 2. Data Flow Diagram (DFD)
 
-### 2.1 Logical Data Flow (DFD Level 1)
-
-```mermaid
-flowchart LR
-  UI[NewSentEmails UI] --> Ctx[MailProvider Context]
-  UI --> Ctx
-  UI --> Svc[EmailService API Layer]
-  UI --> Svc
-
-  Ctx --> Svc
-  Ctx --> Svc
-
-  Svc --> Ctx
-  Ctx --> UI
-
-  UI -- "updateParams / applySorting / setFolder" --> Ctx
-  UI -- "onScroll(start, len)" --> Ctx
-  UI -- "getSelectedMail(id)" --> Ctx
-  UI -- "updateMessage/moveFolder" --> Svc
-
-  Ctx -- "getFolders / getCategories" --> Svc
-  Ctx -- "getInboxMessages / refreshInbox / getMessage" --> Svc
-
-  Svc -- "folders, categories, message groups, tokens" --> Ctx
-  Ctx -- "hookstate stores\nemails + caches + loading" --> UI
-
-
-
-```
-
-### 2.2 Physical Data Flow (DFD Level 2: List Fetch)
+### Description:
+The **Data Flow Diagram (DFD)** for the Mail System Module depicts the flow of data between external and internal components, showing how email data is processed and displayed in the system.
 
 ```mermaid
-sequenceDiagram
-  autonumber
-  participant UI as UI (NewSentEmails)
-  participant Ctx as MailProvider
-  participant Svc as EmailService
-  participant Store as Hookstate Stores
-
-  UI->>Ctx: onScroll(start, len, "sent")
-  Ctx->>Ctx: Abort previous fetch (AbortController)
-  Ctx->>Ctx: Determine folderId + current viewType (sentViewType)
-  Ctx->>Svc: getInboxMessages(start, len, search, userId, folderId, filters..., nextToken)
-  Svc-->>Ctx: { items: groupedEmails[], continuationToken }
-  Ctx->>Store: params.nextPageToken = continuationToken (if changed)
-  Ctx->>Ctx: sortEmailsOptimized(items, sortBy, sortOrder)
-  Ctx->>Store: Merge into MailCollection.emails
-  Ctx->>Store: Merge into sentMails cache (with nextToken)
-  Store-->>UI: rerender with updated groups
+flowchart TD
+    A[User] -->|Login| B[Email Service]
+    B -->|Fetch Folders| C[Folder API]
+    C -->|Return Folder Data| B
+    B -->|Fetch Emails| D[Emails API]
+    D -->|Return Email Data| B
+    B -->|Return Emails| A
+    A -->|Perform Actions| E[Action API]
+    E -->|Update Email Data| D
+    D -->|Return Updated Data| E
+    E -->|Return Result| A
 ```
+
+### Key:
+- **User**: The end-user interacting with the system.
+- **Email Service**: The service that communicates with external email APIs.
+- **Folder API**: The external system that provides folder-related data (e.g., Inbox, Sent).
+- **Emails API**: The system that fetches email data from an external service like Outlook.
+- **Action API**: The API that handles actions like reading, marking, or deleting emails.
 
 ---
 
 ## 3. Process Flow
 
-### 3.1 App boot (initial load)
-1. `MailProvider` mounts.
-2. If `currentUser.emailStatus.status === 1`:
-   - Sets loading `type='all'`
-   - Fetches folders (`getFolders()`) and categories (`EmailService.getCategories()`) in parallel.
-3. Folders:
-   - Excludes “Outbox” and “SENT” (legacy/duplicate).
-   - Applies Gmail-like ordering for consistent UX.
-   - Sets default folder to Inbox.
-   - Immediately triggers initial list fetch: `getItems(0, 100, true)`.
-4. Categories:
-   - Mapped into UI-ready items with color/icon styles (from `categoryColors` and server-provided colors).
+### Description:
+The **Process Flow** explains how the system handles the user actions from initiating an email fetch to applying actions like marking as read/unread or archiving an email.
 
-### 3.2 Folder switch (`setFolder`)
-When user selects another folder:
-1. Clear current selection + draft-related state.
-2. Save previous folder params to `folderParamsRef` keyed by folder id/name.
-3. Restore params for new folder (if previously visited), else reset filters/search and default sorting.
-4. Attempt **cache reuse** for Inbox/Sent/Drafts:
-   - If cache exists → set `MailCollection.emails` immediately and schedule a near-term refresh (`triggerAutoRefresh`).
-   - If not → clear list and fetch first page (`getItems(0, 15, true)`).
+1. **User Logs In**:
+   - The user initiates a login process which authenticates them and provides necessary access tokens.
 
-**Design intent**: make folder switching feel instantaneous while still reconciling with server soon after.
+2. **Folder Fetch**:
+   - The system queries the Folder API to retrieve all available folders (Inbox, Sent, Drafts, etc.).
 
-### 3.3 Search & filters
-- UI search is **debounced** (500ms) and updates `params.search`.
-- Filters (flag/star/important/attachments/mentioned/category) are stored in `params`.
-- Changing params triggers `useEffect` with shallow param comparison:
-  - Debounces 200ms
-  - Calls `getItems(0, 100, true)` to reset and refetch.
+3. **Fetch Emails**:
+   - Based on the current folder, the system fetches emails using the Emails API.
 
-**Local filtering**: `updateParams()` also calls `applyLocalFilters()` on current groups so the UI responds instantly even before the next fetch.
+4. **Display Emails**:
+   - The fetched emails are displayed in the UI with options for filtering and sorting.
 
-### 3.4 Infinite scroll
-- UI calculates `start = getUniqueItemCount(sentEmails.value)` and requests `PAGE=15`.
-- Provider uses folder cache token logic:
-  - `getNextToken("sent")` reads from `sentMails.nextToken`
-  - If scrolling and token is missing → stops (no more pages).
-- Provider merges newly fetched groups into existing groups and de-dupes by message id.
+5. **User Action**:
+   - The user performs an action (e.g., marking an email as read, flagging it).
 
-### 3.5 Mutations (read, flag, category, star, delete, archive)
-1. UI calls EmailService to perform mutation.
-2. On success, UI calls `updateEmails(id, payload, EmailUpdateTypes.*)`.
-3. Provider:
-   - Applies transformation across **combined list** and the **active folder cache** (or specified folderName)
-   - Re-flattens and re-groups using `sortEmailsOptimized` to keep grouping consistent
-4. Schedules a refresh (`triggerAutoRefresh('mutation', 200)`) to reconcile with server.
+6. **API Call**:
+   - The system calls the Action API to update the status of the email.
 
-**Why this hybrid approach?**
-- Optimistic updates keep UX snappy and deterministic.
-- Periodic refresh prevents long-lived divergence.
-
-### 3.6 Inbox auto-refresh
-When current folder is Inbox:
-- Polls every 30s with `EmailService.refreshInbox(0, 10, folderId)`.
-- Prepends new items into existing groups and increments Inbox folder count.
-
-Also triggers refresh on:
-- Browser `online` event
-- Tab visibility return (`visibilitychange`)
+7. **Refresh UI**:
+   - The UI is refreshed to reflect the updated state of the emails.
 
 ---
 
-## 4. ER Diagram
+## 4. Entity Relationship Diagram (ER Diagram)
 
-> This module is a **client-side** layer; entities are the client representations of server resources.
+### Description:
+The **Entity Relationship Diagram (ERD)** for the Mail System defines the structure of the core entities involved and their relationships.
 
 ```mermaid
 erDiagram
-  USER ||--o{ EMAIL_ACCOUNT : owns
-  EMAIL_ACCOUNT ||--o{ MAIL_FOLDER : contains
-  MAIL_FOLDER ||--o{ EMAIL_MESSAGE : stores
-  EMAIL_MESSAGE ||--o{ EMAIL_RECIPIENT : to_cc_bcc
-  EMAIL_MESSAGE }o--o{ EMAIL_CATEGORY : tagged_with
-  EMAIL_MESSAGE ||--o{ EMAIL_ATTACHMENT : includes
-  EMAIL_MESSAGE ||--o{ EMAIL_FLAG : follow_up
+    USERS {
+        string id
+        string email
+        string password
+    }
+    EMAILS {
+        string id
+        string subject
+        string body
+        string senderId
+        string recipientId
+        datetime receivedAt
+        boolean isRead
+        boolean isStarred
+        boolean isFlagged
+    }
+    FOLDERS {
+        string id
+        string name
+    }
+    CATEGORIES {
+        string id
+        string name
+        string color
+    }
+    USERS ||--o{ EMAILS: "sends"
+    USERS ||--o{ EMAILS: "receives"
+    EMAILS ||--o{ FOLDERS: "belongs_to"
+    EMAILS ||--o{ CATEGORIES: "has_category"
 ```
+
+### Key Entities:
+- **Users**: Users who interact with the email system.
+- **Emails**: Represents an email message.
+- **Folders**: Represents email folders like Inbox, Sent, Drafts.
+- **Categories**: Represents email categories for filtering purposes.
 
 ---
 
-## 5. Entity Definition
+## 5. Entity Definitions
 
-### 5.1 `OutlookSingleMailResponse` (Message detail)
-Represents a fully-fetched message for the detail view.
+### Users:
+- **id**: Unique identifier for the user.
+- **email**: The user's email address.
+- **password**: User's encrypted password for authentication.
 
-| Field | Type | Notes |
-|---|---|---|
-| id | string | Message id |
-| date | string | Date-time string (parsed by `new Date()`) |
-| conversationId | string | Conversation/thread id |
-| lastModifiedDateTime | string | Server change time |
-| changeKey | string | Server concurrency token (if used) |
-| isRead | boolean | Read state |
-| isStarred | boolean | Star state |
-| isDraft | boolean | Draft state |
-| isImportant | boolean | Important marker |
-| flag | `FollowUpFlagStatus` | Follow-up state (notFlagged/flagged/complete) |
-| subject | string | Subject line |
-| bodyPreview | string | Preview text |
-| body | string | HTML or text body |
-| senderEmailAddress | string | Sender email |
-| senderName | string | Sender display name |
-| toRecipients / ccRecipients / bccRecipients | `IIdName[]` | Recipient lists |
-| attachments | `IIdName[] \| undefined` | Attachments |
-| categories | any[] | Category values/ids as returned |
-| draftId | string | Draft id (if applicable) |
-| importance | `Importance` | Low/Normal/High |
+### Emails:
+- **id**: Unique identifier for the email.
+- **subject**: Subject of the email.
+- **body**: The content of the email.
+- **senderId**: Reference to the sender (user).
+- **recipientId**: Reference to the recipient (user).
+- **receivedAt**: Timestamp when the email was received.
+- **isRead**: Boolean flag indicating whether the email has been read.
+- **isStarred**: Boolean flag indicating whether the email is starred.
+- **isFlagged**: Boolean flag indicating whether the email is flagged.
 
-### 5.2 `EmailsListResponse` (Grouped list response)
-This is the **grouped list** format used by the UI:
+### Folders:
+- **id**: Unique identifier for the folder.
+- **name**: Name of the folder (e.g., Inbox, Sent, Drafts).
 
-```ts
-type EmailsListResponse = {
-  key: string;      // group key, e.g. "Today", "Yesterday", "High importance", "Alice"
-  items: EmailItem[]; // items in that group
-}
-```
-
-### 5.3 `EmailItemsCacheState` (Per-folder cache pack)
-```ts
-type EmailItemsCacheState = {
-  nextToken: string;            // continuation token for paging
-  value: EmailsListResponse[];  // cached grouped list
-}
-```
-
-### 5.4 `IEmailListParamsState` (List query + UI state)
-Key fields (subset):
-- `userId`, `search`
-- Folder view types:
-  - `viewType` (default)
-  - `inboxViewType`, `sentViewType`, `draftViewType`
-- Filters: `isFlagged`, `isStarred`, `isImportant`, `hasAttachment`, `isMentioned`, `categoryType`
-- Sorting: `sortBy`, `sortOrder`
-- Paging: `nextPageToken`
+### Categories:
+- **id**: Unique identifier for the category.
+- **name**: Name of the category.
+- **color**: Color associated with the category.
 
 ---
 
 ## 6. Authentication / APIs
 
-### Authentication
-This module assumes authentication is handled **outside** this context (e.g., app-level auth/session/token management). `EmailService` should attach credentials (Bearer token / cookie / etc.) to requests.
+### Authentication:
+The module uses OAuth2 authentication to access the user's email account (e.g., Outlook, Gmail). Upon login, the user's access token is stored for subsequent API calls.
 
-**Integration contract**
-- The UI/context expects `EmailService` calls to reject with errors that can be surfaced as toasts (`AOToast.error`).
-- Aborted fetches should throw `AbortError` (and are treated as non-errors).
-
-### APIs
-
-**API Link:** ``
-
-#### Endpoints used by this module (logical)
-- `getFolders()` → folder navigation list
-- `getCategories()` → category metadata
-- `getInboxMessages(...)` → list fetch for the current folder (despite name, it supports folders via `folderId`)
-- `refreshInbox(...)` → small poll for newest Inbox items
-- `getMessage(id)` → detail fetch
-- `updateMessage(id, model)` → read/unread, flag, category, star (depending on `type`)
-- `moveFolder(id, target)` → archive/delete
+### Key APIs:
+- **EmailService.getFolders()**: Fetches the list of available folders.
+- **EmailService.getMessages()**: Fetches emails from a specific folder.
+- **EmailService.updateMessage()**: Updates the status of an email (e.g., marking as read).
+- **EmailService.moveFolder()**: Moves an email to another folder (e.g., archive, trash).
+- **EmailService.getCategories()**: Fetches available categories for emails.
 
 ---
 
 ## 7. Testing Guide
 
-### 7.1 Unit tests (recommended)
-**MailProvider**
-- `sortEmailsOptimized()`
-  - date grouping keys (Today/Yesterday/This Week/…)
-  - from/to grouping + “Unknown” handling
-  - flagStatus grouping for complete/flagged/unflagged
-  - stable ordering asc/desc
-- `applyLocalFilters()`
-  - each filter independently and in combination
-- `shallowEqualParams()`
-  - only material keys trigger fetch
-- `getNextToken()` behavior per folder
-- `updateEmails()` mutation behavior:
-  - read/unread removal when viewType excludes the item
-  - delete/archive removes from groups and caches
-  - category adds distinct values
-  - flag/star set correctly
+### Unit Testing:
+- **Test Email Service**: Mock external APIs and test that the service correctly handles fetching, updating, and sorting emails.
+- **Test Folder Management**: Ensure that folders are correctly populated and accessible.
+- **Test Sorting and Filtering**: Validate that the sorting and filtering logic works as expected (e.g., by date, importance).
 
-**NewSentEmails**
-- View toggle changes `sentViewType` and clears selection
-- Debounced search calls `updateParams` with `search`
-- Context menu actions call appropriate service + `updateEmails`
-
-### 7.2 Integration tests (Playwright/Cypress)
-- Folder switch uses cache (instant render) and then refresh reconciles.
-- Infinite scroll:
-  - loads next page until token is empty
-  - does not duplicate items
-- Mutation flows:
-  - mark read/unread updates UI immediately
-  - archive/delete removes the item and does not reappear after refresh
-- Inbox polling:
-  - while on Inbox, new mail appears and folder count increases
-
-### 7.3 Mocking strategy
-- Mock `EmailService` at module level:
-  - Return grouped items + `continuationToken`
-  - Simulate abort via rejecting with `{ name: 'AbortError' }`
-- Use fake timers for debounce/polling:
-  - 200ms param debounce
-  - 500ms search debounce
-  - 30s polling
+### Integration Testing:
+- **Test Email Fetching**: Verify that emails are correctly fetched and displayed in the UI.
+- **Test Actions**: Test the actions like marking as read, flagging, and archiving, ensuring they update both the UI and the backend.
 
 ---
 
 ## 8. References
 
-- React Context + hooks (`createContext`, `useContext`, `useMemo`, `useCallback`)
-- Hookstate (`@hookstate/core`) for global-ish state with fine-grained updates
-- Lodash `throttle` and `debounce` to control scroll/search churn
-- Fluent UI components for the UI shell and context menus
-- Mermaid diagrams in Markdown:
-  - GitHub supports Mermaid in Markdown code fences (` ```mermaid `)
+- **Fluent UI**: [https://developer.microsoft.com/en-us/fluentui](https://developer.microsoft.com/en-us/fluentui)
+- **Hookstate**: [https://hookstate.js.org/](https://hookstate.js.org/)
+- **Outlook API**: [https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview?view=graph-rest-1.0](https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview?view=graph-rest-1.0)
+
+---
 
