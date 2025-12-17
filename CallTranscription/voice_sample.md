@@ -128,18 +128,26 @@ sequenceDiagram
 
 ```mermaid
 erDiagram
-    ApplicationUser ||--o| ApplicationUserVoiceStatus : has
+    direction LR
 
-    ApplicationUser {
-        string Id
+    USER ||--o| VOICESTATUS : has
+
+    USER {
+        string Id PK "Primary Key"
         int PracticeId
-        ApplicationUserVoiceStatus Voice
     }
 
-    ApplicationUserVoiceStatus {
-        bool Recorded
-        datetime On
+    VOICESTATUS {
+        bool Recorded "Has Voice Recording"
+        datetime On "Date Recorded"
+        string UserId FK "Foreign Key to USER"
     }
+
+    %% Highlight VOICESTATUS to simulate 'active' state/focus
+    classDef active fill:#ffe066,stroke:#ffab00,stroke-width:3px
+    class VOICESTATUS active
+
+    %% Optionally, style keys for greater clarity
 ```
 
 ---
