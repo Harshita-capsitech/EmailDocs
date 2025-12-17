@@ -18,6 +18,29 @@ All Drafts operations are routed through the common Inbox API, with folder-speci
 
 This ensures Drafts behaves identically across email providers.
 
+
+## Common API for All Folders
+
+A **single API** (`/api/inboxapi`) is used for **all mail folders**, including:
+
+- Inbox
+- Sent Items
+- Drafts
+- Important
+- Custom folders
+
+Folder behavior is controlled using request parameters (such as folder id/type), not separate APIs.
+
+This ensures:
+
+- Consistent behavior across folders
+- Shared paging and filtering logic
+- Easier maintenance and extensibility
+
+[Inbox Documentation](../API/InboxApi.md)
+
+---
+
 ## Drafts Folder Characteristics
 
 - Contains unsent email messages

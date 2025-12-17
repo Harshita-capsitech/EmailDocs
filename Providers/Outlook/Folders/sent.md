@@ -22,6 +22,29 @@ This ensures consistent Sent behavior across all supported email providers.
 
 ---
 
+
+## Common API for All Folders
+
+A **single API** (`/api/inboxapi`) is used for **all mail folders**, including:
+
+- Inbox
+- Sent Items
+- Drafts
+- Important
+- Custom folders
+
+Folder behavior is controlled using request parameters (such as folder id/type), not separate APIs.
+
+This ensures:
+
+- Consistent behavior across folders
+- Shared paging and filtering logic
+- Easier maintenance and extensibility
+
+[Inbox Documentation](../API/InboxApi.md)
+
+---
+
 ## Sent Folder Characteristics
 
 - Contains successfully delivered outgoing emails

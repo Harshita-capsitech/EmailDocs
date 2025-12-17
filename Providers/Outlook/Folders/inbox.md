@@ -55,6 +55,8 @@ This ensures:
 - Shared paging and filtering logic
 - Easier maintenance and extensibility
 
+[Inbox Documentation](../API/InboxApi.md)
+
 ---
 
 ## Frontend Implementation
