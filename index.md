@@ -23,6 +23,17 @@ The `emails` controller acts as an intelligent router:
 User Request → emails Controller → Provider Flag Check
                                    ├─→ Google Provider (Gmail API)
                                    └─→ Microsoft Provider (Outlook API)
+
+Frontend Mail Module
+   ↓
+Read provider from user configuration
+   ↓
+Provider Check
+   ├─→ provider === "microsoft"
+   │      Base API → /admin/emails
+   │
+   └─→ provider === "google"
+          Base API → /admin/google
 ```
 
 - **Single Entry Point**: All email operations (read, send, delete, search) go through the same controller endpoint
