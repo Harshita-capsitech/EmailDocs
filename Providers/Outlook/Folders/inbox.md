@@ -7,8 +7,8 @@ The Inbox feature provides a single, consistent inbox experience while supportin
 This document explains how the Inbox works end-to-end **from Frontend → Common Inbox API → Provider routing**, covering paging, filters, sorting, search, and refresh behavior.
 
 > 🔗 Related docs:  
-> - [Mail Module Overview](../index.md)  
-> - [Outlook Provider](./outlook.md)
+> - [Mail Module Overview](../../../Architecture/Overview.md)  
+> - [Outlook Provider](../outlook.md)
 
 ---
 
