@@ -17,6 +17,7 @@ This document explains how the Inbox works end-to-end **from Frontend → Common
 ### Frontend → Common Inbox API → Provider
 
 1. The Inbox screen loads emails using `useMail()` (MailContext).
+> 👉 **[Click here to view Mail Context](../components/mailContext.md)**
 2. `MailContext.getItems()` calls `EmailService.getInboxMessages(...)`.
 3. All folder-based email requests (Inbox, Sent, Drafts, etc.) are routed through a **single common API**:
 /api/inboxapi|
