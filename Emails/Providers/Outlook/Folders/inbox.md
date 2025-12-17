@@ -213,12 +213,18 @@ This module only manages metadata and listing. Attachments are handled in the em
 ### Overall Flowchart
 
 ```mermaid
-flowchart TD
-UI[User Action] --> Inbox[NewInboxEmails]
-Inbox --> Context[useMail Context]
-Context --> API[EmailService]
-API --> Context
-Context --> UI
+graph TD
+    UI[User Action] edge1@--> Inbox[NewInboxEmails]
+    Inbox edge2@--> Context[useMail Context]
+    Context edge3@--> API[EmailService]
+    API edge4@--> Context
+    Context edge5@--> UI
+
+    edge1@{ animate: fast }
+    edge2@{ animate: fast }
+    edge3@{ animate: fast }
+    edge4@{ animate: fast }
+    edge5@{ animate: fast }
 ```
 
 ### Sequence Diagram
@@ -266,26 +272,43 @@ StoreUpdate --> UIRefresh
 ## DFD (Data Flow Diagram)
 
 ```mermaid
-flowchart TD
-    UI[Inbox UI / Client] -->|Query Params| API[Inbox API - GetMessages]
-    API -->|Auth Token| Graph[Microsoft Graph SDK]
-    Graph -->|Filtered Messages| API
-    API -->|Normalize & Map| Mapper[EmailsListItem Mapper]
-    Mapper -->|PagedData| API
-    API --> UI
+graph TD
+    UI[Inbox UI / Client] edge1@--> |Query Params| API[Inbox API - GetMessages]
+    API edge2@--> |Auth Token| Graph[Microsoft Graph SDK]
+    Graph edge3@--> |Filtered Messages| API
+    API edge4@--> |Normalize & Map| Mapper[EmailsListItem Mapper]
+    Mapper edge5@--> |PagedData| API
+    API edge6@--> UI
+
+    edge1@{ animate: fast }
+    edge2@{ animate: fast }
+    edge3@{ animate: fast }
+    edge4@{ animate: fast }
+    edge5@{ animate: fast }
+    edge6@{ animate: fast }
+
 ```
 
 ## Process Flow
 
 ```mermaid
 flowchart LR
-    Start[Client Requests Inbox] --> Params[Build Filters & Params]
-    Params --> GraphCall[GraphServiceClient.Messages.Get]
-    GraphCall --> GraphResp[MessageCollectionResponse]
-    GraphResp --> ReplyCount[Fetch Reply Count per Conversation]
-    ReplyCount --> Normalize[Normalize Message Fields]
-    Normalize --> Page[Build PagedData]
-    Page --> End[Return Response]
+    Start[Client Requests Inbox] edge1@--> Params[Build Filters & Params]
+    Params edge2@--> GraphCall[GraphServiceClient.Messages.Get]
+    GraphCall edge3@--> GraphResp[MessageCollectionResponse]
+    GraphResp edge4@--> ReplyCount[Fetch Reply Count per Conversation]
+    ReplyCount edge5@--> Normalize[Normalize Message Fields]
+    Normalize edge6@--> Page[Build PagedData]
+    Page edge7@--> End[Return Response]
+
+    edge1@{ animate: fast }
+    edge2@{ animate: fast }
+    edge3@{ animate: fast }
+    edge4@{ animate: fast }
+    edge5@{ animate: fast }
+    edge6@{ animate: fast }
+    edge7@{ animate: fast }
+
 ```
 
 ## ER Diagram
