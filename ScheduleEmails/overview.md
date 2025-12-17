@@ -98,12 +98,48 @@ flowchart TD
 ---
 
 ## ER Diagram
-- **User**: Represents the sender of the email.
-- **ScheduleEmail**: Stores the details of the scheduled email, including recipients, subject, content, and scheduled time.
-- **DraftEmail**: Represents an email saved as a draft before it is sent.
-- **ScheduledStatus**: Tracks the current status of the scheduled email (e.g., Pending, Sent, Failed).
-- **Attachment**: Represents files attached to the email.
+```mermaid
+erDiagram
+    direction TB
 
+    USER:::darknode {
+        int userId PK
+        string name
+    }
+    SCHEDULEEMAIL:::darknode {
+        int scheduleEmailId PK
+        string subject
+        string recipients
+        string content
+        datetime scheduledTime
+    }
+    DRAFTEMAIL:::darknode {
+        int draftEmailId PK
+        string subject
+        string recipients
+        string content
+        datetime saveTime
+    }
+    SCHEDULEDSTATUS:::darknode {
+        int statusId PK
+        string status
+    }
+    ATTACHMENT:::darknode {
+        int attachmentId PK
+        string filename
+        string filetype
+    }
+
+    USER ||--o{ SCHEDULEEMAIL : "schedules"
+    USER ||--o{ DRAFTEMAIL : "has draft"
+    SCHEDULEEMAIL }o--|| SCHEDULEDSTATUS : "status"
+    SCHEDULEEMAIL ||--o{ ATTACHMENT : "has"
+    DRAFTEMAIL ||--o{ ATTACHMENT : "has"
+
+    %% Dark, grey style
+    classDef darknode fill:#222,stroke:#555,stroke-width:3px,color:#ddd;
+    class USER,SCHEDULEEMAIL,DRAFTEMAIL,SCHEDULEDSTATUS,ATTACHMENT darknode
+```
 ---
 
 ## Entity Definition
@@ -150,4 +186,5 @@ flowchart TD
 - **Version 1.2**: UI enhancements for draft management and scheduling.
 
 ---
+
 
