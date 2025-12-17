@@ -319,11 +319,11 @@ curl -s "$BASE_URL/UserStats?fromDate=01/12/2025&toDate=31/12/2025&teamId=&sortD
 ##  References
 
 ### Frontend modules (uploaded)
-- Dashboard container: `NewAdminTimeSheet.tsx` fileciteturn0file0L1-L23  
-- Communication + Reviews cards: `NewCommunicationReviewsCardComponent.tsx` fileciteturn0file1L1-L23  
-- Sales + Quotes cards: `NewSalesQuotesCardComponent.tsx` fileciteturn0file2L1-L20  
-- Top/Bottom user table: `NewTimeSheetUserTable.tsx` fileciteturn0file3L1-L23  
+- Dashboard container: `NewAdminTimeSheet.tsx` 
+- Communication + Reviews cards: `NewCommunicationReviewsCardComponent.tsx`   
+- Sales + Quotes cards: `NewSalesQuotesCardComponent.tsx` 
+- Top/Bottom user table: `NewTimeSheetUserTable.tsx` 
 
 ### Notes
-- The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. fileciteturn0file1L147-L186  
-- Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. fileciteturn0file2L175-L213  
+- The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
+- Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
