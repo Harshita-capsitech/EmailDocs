@@ -1,232 +1,178 @@
-# Drafts Folder
+# Email Messages Retrieval Module – GetMessages
 
 ## Overview
 
-The Drafts folder represents all emails that have been created but not yet sent. It provides a reliable, auto-saved workspace where users can safely compose, edit, and manage unfinished messages.
+The **GetMessages** module is a backend service responsible for retrieving a paginated, filtered, and normalized list of email messages from **Microsoft Graph**. It acts as the **single backend entry point** for inbox-like views (Inbox, Sent Items, Drafts, etc.) used by frontend applications.
 
-Drafts follows the same unified, provider-agnostic architecture as Inbox and Sent. Whether the underlying provider is Gmail or Outlook, the Drafts experience remains consistent, predictable, and fully integrated into the Mail module.
+### Purpose
 
-All Drafts operations are routed through the common Inbox API, with folder-specific behavior controlled by parameters.
+* Provide a **unified email listing API** across folders
+* Support rich filtering (read/unread, flagged, categories, attachments, mentions)
+* Enable efficient pagination and infinite scroll
+* Normalize raw Graph responses into UI-ready models
 
-## Unified Drafts Architecture
+### Problems It Solves
 
-- Drafts uses the same common message retrieval API as all other folders
-- Folder-specific behavior is determined using the Drafts folder identifier
-- Provider detection (Gmail or Outlook) happens transparently
-- Responses are normalized into a unified format
-- The frontend remains completely provider-agnostic
-
-This ensures Drafts behaves identically across email providers.
-
-
-## Common API for All Folders
-
-A **single API** (`/api/inboxapi`) is used for **all mail folders**, including:
-
-- Inbox
-- Sent Items
-- Drafts
-- Important
-- Custom folders
-
-Folder behavior is controlled using request parameters (such as folder id/type), not separate APIs.
-
-This ensures:
-
-- Consistent behavior across folders
-- Shared paging and filtering logic
-- Easier maintenance and extensibility
-
-[Inbox Documentation](../API/InboxApi.md)
+* Avoids multiple folder-specific APIs
+* Centralizes OData filter construction
+* Ensures consistent sorting and pagination
+* Decouples frontend from Graph SDK complexities
 
 ---
 
-## Drafts Folder Characteristics
+## Data Flow Diagram (DFD)
+
+```mermaid
+flowchart LR
+    UI[Frontend UI] --> API[Email Controller]
+    API --> Service[GetMessages Service]
+    Service --> Graph[Microsoft Graph API]
+    Graph --> Service
+    Service --> API
+    API --> UI
+```
+
+---
+
+## Process Flow
+
+```mermaid
+flowchart TD
+    Start[Request Received] --> Params[Parse Query Parameters]
+    Params --> Filters[Build OData Filters]
+    Filters --> GraphCall[GraphServiceClient.Messages.Get]
+    GraphCall --> GraphResp[MessageCollectionResponse]
+    GraphResp --> ReplyCount[Fetch Reply Count per Conversation]
+    ReplyCount --> Normalize[Map to EmailsListItem]
+    Normalize --> Page[Build PagedData]
+    Page --> End[Return Response]
+```
+
+---
+
+## ER Diagram
+
+```mermaid
+erDiagram
+    USER ||--o{ MESSAGE : owns
+    MESSAGE ||--o{ ATTACHMENT : contains
+    MESSAGE }o--o{ CATEGORY : tagged_with
+    MESSAGE ||--o{ RECIPIENT : sent_to
+
+    USER {
+        string userId
+        string email
+    }
+
+    MESSAGE {
+        string id
+        string subject
+        datetime receivedDate
+        datetime sentDate
+        boolean isRead
+        boolean isDraft
+        string conversationId
+        string importance
+    }
+
+    ATTACHMENT {
+        string id
+        string name
+    }
+
+    CATEGORY {
+        string name
+    }
+
+    RECIPIENT {
+        string id
+        string name
+    }
+```
+
+---
+
+## Entity Definition
+
+### EmailsListItem
+
+| Property         | Type               | Description             |
+| ---------------- | ------------------ | ----------------------- |
+| `Id`             | string             | Unique message ID       |
+| `From`           | string             | Sender display name     |
+| `ToRecipients`   | List<IdNameModel>  | Recipient list          |
+| `Subject`        | string             | Email subject           |
+| `Snippet`        | string             | Body preview            |
+| `Date`           | DateTime           | Normalized message date |
+| `IsRead`         | bool               | Read status             |
+| `IsDraft`        | bool               | Draft indicator         |
+| `Important`      | Importance         | Importance flag         |
+| `Flag`           | FollowupFlagStatus | Follow-up flag status   |
+| `Categories`     | List<string>       | Assigned categories     |
+| `HasAttachment`  | bool               | Attachment indicator    |
+| `Attachments`    | List<IdName>       | Attachment metadata     |
+| `ConversationId` | string             | Conversation thread ID  |
+| `ReplyCount`     | int                | Replies count           |
+
+---
+
+## Authentication / APIs
+
+### Authentication
+
+* OAuth 2.0 access token
+* Token scoped for **Mail.Read** / **Mail.ReadWrite**
+* Injected into `GraphServiceClient`
 
-- Contains unsent email messages
-- Supports read and unread states
-- Fully searchable and filterable
-- Supports categories, flags, and importance
-- Maintains its own paging and view state
-- Cached independently from Inbox and Sent
+### External APIs
 
-## Drafts UI Experience
+* **Microsoft Graph**: `/me/mailFolders/{folder}/messages`
 
-### Drafts Screen
+### Backend API Contract
 
-The Drafts screen provides:
+```http
+GET /api/emails/messages
+```
 
-- Folder header with filter controls
-- Unread / Read / All toggle buttons
-- Search input with debounce
-- Grouped infinite-scrolling list
-- Right-click contextual actions
-- Empty state messaging when no drafts exist
+### Key Query Parameters
 
-The UI updates immediately using cached data, followed by background reconciliation.
+* `inboxType` (inbox, sentitems, drafts)
+* `viewType` (unread, read, all)
+* `search`
+* `isFlagged`
+* `categoryType`
+* `hasAttachment`
+* `hasMentioned`
+* `start`, `length`
 
-### View Modes (Unread / Read / All)
+---
 
-Drafts maintains its own view toggle state:
+## Testing Guide
 
-- Unread
-- Read
-- All
+### Unit Tests
 
-Changing the view:
+* Filter construction logic
+* View type handling (read/unread)
+* Date normalization logic
+* Reply count aggregation
 
-- Clears the currently selected draft
-- Resets paging state
-- Triggers a refetch using the common Inbox API
-- Does not affect Inbox or Sent views
+### Integration Tests
 
-Each folder remembers its own view preference.
+* Microsoft Graph sandbox
+* Pagination & continuation token validation
+* Large mailbox scenarios
 
-### Search in Drafts
+### Edge Cases
 
-- Search is scoped strictly to Drafts
-- Input is debounced for performance
-- Paging tokens are reset on new search
-- Search resets automatically when switching folders
+* Empty folders
+* Messages without ConversationId
+* Draft vs Sent date resolution
+* Search strings with special characters
 
-This ensures fast and isolated search behavior.
+---
 
-## Grouping and Sorting
+## References
 
-Drafts supports the same grouping and sorting capabilities as Inbox:
-
-### Supported Sort Modes
-
-**Date (default)**
-- Today
-- Yesterday
-- This Week
-- Last Week
-- This Month
-- Older month and year buckets
-
-**Category**
-
-**Importance**
-
-**Flag status**
-
-**From / To**
-
-**Subject**
-
-Grouping and sorting are performed client-side to ensure identical behavior across providers.
-
-## Paging and Infinite Scroll
-
-Drafts uses continuation-token–based paging.
-
-- Each fetch returns a continuation token
-- Tokens are stored per-folder
-- Infinite scrolling stops automatically when no token exists
-- Newly fetched items are merged without duplication
-
-Drafts paging is fully isolated from Inbox and Sent paging.
-
-## Context Menu Actions (Drafts)
-
-Right-clicking a draft opens a contextual menu with the following actions.
-
-### Archive
-
-- Removes the draft from Drafts
-- Updates local cache immediately
-- Updates folder count
-- Clears selected draft if open
-
-### Delete
-
-- Permanently deletes the draft
-- Removes it from all Drafts caches
-- Updates navigation counters
-- Triggers background reconciliation
-
-### Mark Read / Unread
-
-- Toggles read state
-- Automatically removes the item if it no longer matches the active view filter
-
-### Flag
-
-Supports the following flag presets:
-
-- Today
-- Tomorrow
-- This Week
-- Next Week
-- Mark Complete
-- Clear Flag
-
-Flag updates are reflected immediately in both list and detail views.
-
-### Categories
-
-- Assign one or more categories
-- Clear assigned categories
-- Categories are merged safely without duplication
-
-## Local Cache and Performance
-
-### Drafts Cache
-
-Drafts maintains a dedicated cache:
-
-- Cached data is reused instantly when switching folders
-- UI renders immediately without waiting for the server
-- A background refresh reconciles state shortly after
-
-This results in fast navigation with no stale data risk.
-
-### Refresh and Synchronization
-
-Drafts is refreshed automatically when:
-
-- Filters or view modes change
-- Search parameters update
-- Mutations occur (delete, archive, flag, category)
-- Folder is revisited after navigation
-
-All refresh actions are throttled to prevent excessive API usage.
-
-### Empty State Handling
-
-When Drafts contains no messages:
-
-- A friendly empty state is displayed
-- Users are prompted to adjust filters or search terms
-- UI remains responsive and predictable
-
-## Security and Reliability
-
-- All Drafts actions are authenticated via Bearer token
-- Provider access tokens are managed securely
-- Provider-specific rules and permissions are respected
-- Errors are handled gracefully with user feedback
-
-## Integration with the Mail Module
-
-When Drafts is active:
-
-- Requests flow through the same common Inbox API
-- Folder-specific parameters identify Drafts
-- Provider routing happens automatically
-- Responses are normalized into the standard Mail format
-- UI behavior matches Inbox and Sent exactly
-- No special handling is required at the UI level
-
-## Key Takeaways
-
-- Drafts uses one common API, not a separate endpoint
-- Behavior is folder-driven, not provider-driven
-- Gmail and Outlook Drafts behave identically
-- Caching and paging are isolated per folder
-- The architecture is scalable and maintainable
-
-## Summary
-
-The Drafts folder delivers a reliable, high-performance drafting experience built on the Mail module's unified architecture. By combining provider-agnostic APIs, folder-specific state management, intelligent caching, and consistent UI behavior, Drafts ensures users never lose work and can manage unfinished emails with confidence—regardless of whether the underlying provider is Gmail or Outlook.
+* Microsoft Graph Mail API Documentation
+* OData Filter Syntax
+* Internal Mail Architecture Guide
