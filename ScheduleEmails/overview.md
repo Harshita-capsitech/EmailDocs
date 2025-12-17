@@ -13,8 +13,8 @@ The **Schedule Email** feature allows users to schedule emails to be sent at a l
 ---
 
 ## DFD (Data Flow Diagram)
-
 ```mermaid
+
 flowchart TD
     %% External Entities
     User[(User)]
@@ -32,26 +32,42 @@ flowchart TD
     P5((Retry Failed Email))
     P6((View Logs))
 
-    %% Data Flows
-    User --> P1
-    P1 --> AuthService
-    AuthService --> P1
+    %% Data Flows (animated edges)
+    User e1@--> P1
+    P1 e2@--> AuthService
+    AuthService e3@--> P1
 
-    P1 --> P2
-    P2 --> ScheduleDB
-    ScheduleDB --> P2
+    P1 e4@--> P2
+    P2 e5@--> ScheduleDB
+    ScheduleDB e6@--> P2
 
-    P2 --> P3
-    P3 --> ScheduleDB
+    P2 e7@--> P3
+    P3 e8@--> ScheduleDB
 
-    P4 --> EmailService
+    P4 e9@--> EmailService
 
-    P3 --> FailedScheduleDB
-    FailedScheduleDB --> P5
-    P5 --> EmailService
+    P3 e10@--> FailedScheduleDB
+    FailedScheduleDB e11@--> P5
+    P5 e12@--> EmailService
 
-    P3 --> LogService
-    LogService --> P6
+    P3 e13@--> LogService
+    LogService e14@--> P6
+
+    %% Animate edges
+    e1@{ animation: fast }
+    e2@{ animation: fast }
+    e3@{ animation: fast }
+    e4@{ animation: fast }
+    e5@{ animation: fast }
+    e6@{ animation: fast }
+    e7@{ animation: fast }
+    e8@{ animation: fast }
+    e9@{ animation: fast }
+    e10@{ animation: fast }
+    e11@{ animation: fast }
+    e12@{ animation: fast }
+    e13@{ animation: fast }
+    e14@{ animation: fast }
 
     %% Styling
     style User stroke-width:2px
@@ -61,7 +77,6 @@ flowchart TD
     style ScheduleDB stroke-width:2px
     style FailedScheduleDB stroke-width:2px
 ```
-
 ---
 
 ## Process Flow
@@ -135,3 +150,4 @@ flowchart TD
 - **Version 1.2**: UI enhancements for draft management and scheduling.
 
 ---
+
