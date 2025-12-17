@@ -1,120 +1,253 @@
-# Email Inbox Integration Documentation
+# Unified Inbox Listing – Detailed Flow Documentation (Outlook & Gmail)
 
-This document details the implementation of the Email List API, which integrates both Microsoft Outlook (Graph SDK) and Google Gmail into a unified interface.
+This document explains the **end-to-end flow of the Inbox listing API**, which provides a **unified email list experience** across **Microsoft Outlook (Graph API)** and **Gmail**. It covers authorization, provider resolution, filtering, pagination, and message normalization.
 
-## 1. API Overview
+---
 
-The endpoint fetches a paginated list of email messages based on user preferences and provider types.
+## 1. Purpose of `GetAllMessages`
 
-- **URL:** `https://localhost:5005/emails/Inbox`
-- **Method:** `GET`
-- **Authentication:** Requires a valid `ApplicationUserAccessTokens` associated with the logged-in user.
+The `GetAllMessages` endpoint is responsible for:
 
-### Query Parameters
+- Fetching **paginated email lists** for the inbox UI
+- Supporting **multiple email providers** (Outlook & Gmail)
+- Applying filters (important, unread, flagged, attachments, mentions, categories)
+- Handling search, sorting, and date ranges
+- Returning a **normalized, UI-ready response**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `start` | int | 0 | The starting index for pagination (Skip). |
-| `length` | int | 35 | Number of items to fetch (Top). |
-| `search` | string | null | Search keyword for subjects or email addresses. |
-| `inboxType` | string | "inbox" | Folder ID or Name (e.g., "sentitems", or a specific Outlook Folder ID). |
-| `viewType` | string | "" | Filter by status: unread, read, or all. |
-| `isImportant` | bool | false | Filter for high-importance emails. |
-| `categoryType` | string | null | Filter by specific Outlook categories (e.g., "Green category"). |
-| `sortBy` | string | "Date" | Field to sort the results. |
+---
 
-> **Note on inboxType:** For Microsoft Outlook, this API is highly flexible. You can pass standard folder names (like `inbox`, `sentitems`) OR a unique Folder ID (long alphanumeric string) to retrieve messages from any specific subfolder using the same logic.
+## 2. API Definition
 
-## 2. Technical Workflow
-
-The backend follows a multi-step process to fetch and transform data:
-
-### Step A: Provider Identification
-
-The system retrieves the user's access token from the database and checks the `EmailProvider` property:
-
-- **Outlook:** Uses `MicrosoftController.GetMessages` via the Microsoft Graph SDK.
-- **Gmail:** Uses `GoogleController.GetMessageList` via the Google Gmail API.
-
-### Step B: Filter Construction (Outlook Logic)
-
-For Outlook, the system builds an OData filter string. Key logic includes:
-
-- **Time Anchoring:** It adds a filter for `receivedDateTime` or `sentDateTime` relative to `UtcNow` to ensure data consistency.
-- **Dynamic Filtering:** It conditionally appends filters for Importance, Read/Unread status, Flagged status, Mentions, and Categories.
-- **Search:** Implements a `contains` query on both `subject` and `from/emailAddress/address`.
-
-### Step C: Data Fetching & Expansion
-
-The Graph SDK call includes:
-- A `$select` statement to minimize data transfer
-- An `$expand` statement to fetch attachment metadata (ID and Name) in a single request
-
-### Step D: Thread/Reply Count (Parallel Processing)
-
-For every message retrieved, the system:
-1. Identifies the `ConversationId`
-2. Executes `GetReplyCount` tasks in parallel using `Task.WhenAll` to provide thread counts without significantly slowing down the response
-
-## 3. Request & Response Example
-
-### Example Request
-
-```http
-GET /emails/Inbox?start=0&length=100&viewType=all&sortBy=date&inboxType=AQMkADBjZjc...
+```csharp
+[Authorize(Roles = "ADMIN,MANAGER,STAFF")]
+[HttpGet("Inbox")]
+public async Task<ApiResponse<PagedData<EmailsListItem>>> GetAllMessages(...)
 ```
 
-### Example Response Payload
+### Key Characteristics
 
-The response is wrapped in a standard `ApiResponse` object.
+| Attribute | Purpose |
+|---------|--------|
+| `Authorize` | Restricts access to valid application roles |
+| `HttpGet("Inbox")` | Unified inbox listing endpoint |
 
-```json
+---
+
+## 3. Query Parameters
+
+| Parameter | Purpose |
+|--------|--------|
+| `start` | Pagination offset |
+| `length` | Page size |
+| `search` | Subject / sender search |
+| `inboxType` | Folder name (inbox, sentitems, drafts, etc.) |
+| `isImportant` | High importance mails only |
+| `viewType` | unread / read / all |
+| `isFlagged` | Flagged emails |
+| `isStarred` | Starred emails (Gmail) |
+| `hasAttachment` | Emails with attachments |
+| `hasMentioned` | Emails where user is mentioned |
+| `categoryType` | Outlook category filter |
+| `sortBy` | Sorting field |
+| `nextPageToken` | Gmail pagination token |
+| `startDate` | Filter start date |
+| `endDate` | Filter end date |
+
+---
+
+## 4. Access Token & Provider Resolution
+
+```csharp
+var db = new ApplicationUserAccessTokensDB(User);
+var accessToken = await db.GetByUserId(User.GetUserId());
+```
+
+### Provider Routing
+
+- **Outlook** → Microsoft Graph flow
+- **Gmail** → Google API flow
+
+```csharp
+if (accessToken.EmailProvider == Outlook) { ... }
+else if (accessToken.EmailProvider == Gmail) { ... }
+```
+
+This ensures a **single inbox API** with provider-specific implementations.
+
+---
+
+## 5. Outlook Inbox Flow – `GetMessages`
+
+### Filter Construction Strategy
+
+Filters are dynamically built using **OData syntax**:
+
+| Condition | OData Filter |
+|---------|-------------|
+| Inbox vs Sent | `receivedDateTime` / `sentDateTime` |
+| Important | `importance eq 'high'` |
+| Unread | `isRead eq false` |
+| Read | `isRead eq true` |
+| Search | `contains(subject, ...)` |
+| Flagged | `flag/flagStatus eq 'flagged'` |
+| Category | `categories/any(...)` |
+| Mentioned | `MentionsPreview/IsMentioned eq true` |
+| Attachment | `hasAttachments eq true` |
+
+All filters are combined using logical `and`.
+
+---
+
+## 6. Microsoft Graph Query Execution
+
+```csharp
+client.Me.MailFolders[inboxType].Messages.GetAsync(...)
+```
+
+### Query Configuration
+
+- **Select** → Minimal required fields
+- **OrderBy** → Date descending
+- **Skip / Top** → Pagination
+- **Expand** → Attachments (id, name)
+
+This minimizes payload size and improves performance.
+
+---
+
+## 7. Message Normalization
+
+Each Graph `Message` is converted into `EmailsListItem`:
+
+### Normalized Fields
+
+- Sender name
+- Subject
+- Read status
+- Importance
+- Attachments
+- Categories
+- Draft status
+- Conversation ID
+- Recipient list
+
+### Date Resolution Logic
+
+```csharp
+GetMessageDate(message, folderType)
+```
+
+Ensures correct date display for:
+
+- Inbox
+- Sent items
+- Drafts
+
+---
+
+## 8. Conversation Reply Count
+
+```csharp
+GetReplyCount(client, conversationId)
+```
+
+- Executed per message
+- Aggregated asynchronously using `Task.WhenAll`
+- Enhances UI with thread awareness
+
+---
+
+## 9. Pagination Strategy
+
+| Provider | Pagination Method |
+|--------|------------------|
+| Outlook | `Skip / Top` + `@odata.nextLink` |
+| Gmail | `nextPageToken` |
+
+Returned as:
+
+```csharp
+PagedData
 {
-    "executionTime": 12.308,
-    "result": {
-        "totalRecords": 35,
-        "items": [
-            {
-                "id": "AAMkADBjZjc...",
-                "date": "2025-12-16T07:26:41Z",
-                "from": "sneha test",
-                "subject": "Smart Suggestions",
-                "snippet": "Hello how are you?",
-                "isRead": true,
-                "hasAttachment": false,
-                "important": 1,
-                "replyCount": 0,
-                "toRecipients": [
-                    {
-                        "name": "Sneha Jhawar",
-                        "id": "sneha.jhawar@capsitech.com"
-                    }
-                ]
-            }
-        ],
-        "continuationToken": null
-    },
-    "status": true
+  Items,
+  TotalRecords,
+  ContinuationToken
 }
 ```
 
-## 4. Key Logic Features
+---
 
-### Unified Folder Handling
+## 10. Error Handling Strategy
 
-As mentioned, the `inboxType` parameter is the key to folder navigation.
+### Controller Level
 
-- **Sent Items:** If `inboxType == "sentitems"`, the logic automatically switches the sorting and filtering from `receivedDateTime` to `sentDateTime`.
-- **Custom Folders:** Passing a Graph Folder ID to `inboxType` allows the system to query any specific user-created folder using the exact same code path.
+- Errors added to `ApiResponse`
+- Prevents API failure propagation
 
-### Date Normalization
+### Provider Level
 
-The helper method `GetMessageDate` is used to pick the most relevant timestamp based on the folder type:
+```csharp
+throw new AppModelException(ex.Message);
+```
 
-- **Drafts:** Uses `LastModifiedDateTime`
-- **Sent:** Uses `SentDateTime`
-- **Inbox:** Uses `ReceivedDateTime`
+Ensures consistent error formatting.
 
-### Attachment Mapping
+---
 
-Unlike basic API calls that only return a boolean `hasAttachments`, this implementation maps the expanded attachment collection into a simplified `IdName` list, allowing the UI to show filenames directly in the list view.
+## 11. Mermaid Flowcharts
+
+### A. Unified Inbox Flow
+
+```mermaid
+flowchart TD
+    A[GET /Inbox] --> B[Resolve Access Token]
+    B --> C{Email Provider}
+
+    C -->|Outlook| D[Build OData Filters]
+    D --> E[Call Microsoft Graph]
+    E --> F[Normalize Messages]
+
+    C -->|Gmail| G[Call Gmail API]
+    G --> F
+
+    F --> H[Apply Pagination]
+    H --> I[Return Paged Inbox Response]
+```
+
+---
+
+### B. Outlook Message Fetch Sequence
+
+```mermaid
+sequenceDiagram
+    participant UI
+    participant API
+    participant Graph as Microsoft Graph
+
+    UI->>API: GET /Inbox
+    API->>Graph: Messages.Get (filters + paging)
+    Graph-->>API: Message Collection
+    API->>API: Normalize & Count Replies
+    API-->>UI: Paged Inbox Response
+```
+
+---
+
+## 12. Key Design Principles
+
+- Provider-agnostic inbox API
+- Optimized Graph queries
+- Dynamic filter construction
+- UI-focused normalization
+- Scalable for additional providers
+
+---
+
+## 13. Final Outcome
+
+This implementation delivers:
+
+- A single, consistent inbox experience
+- High-performance email listing
+- Clean separation of provider logic
+- Extensible architecture for future integrations
