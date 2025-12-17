@@ -1,304 +1,372 @@
-# Inbox
+# NewInboxEmails Module – Technical Documentation
 
-## Overview
+## 1. Overview
 
-The Inbox feature provides a single, consistent inbox experience while supporting **both Gmail and Outlook** behind the scenes. The UI and API remain **provider-agnostic**, while the system internally routes each request to the correct provider implementation based on the authenticated user.
+### Purpose
 
-This document explains how the Inbox works end-to-end **from Frontend → Common Inbox API → Provider routing**, covering paging, filters, sorting, search, and refresh behavior.
+The **NewInboxEmails** module is a production-grade inbox listing and interaction layer for an email client application. It is responsible for rendering inbox emails, handling user interactions (read/unread, flagging, categorization, archive, delete), and synchronizing UI state with backend email services.
 
-> 🔗 Related docs:  
-> - [Mail Module Overview](../../../Architecture/Overview.md)  
-> - [Outlook Provider](../outlook.md)
+### Problems It Solves
 
----
+* Unified inbox rendering with grouping and infinite scrolling
+* Consistent state synchronization between UI and backend
+* Contextual actions (right-click menu) with minimal UI latency
+* Debounced searching and filtering for performance
 
-## End-to-End Flow
+### Key Responsibilities
 
-### Frontend → Common Inbox API → Provider
-
-1. The Inbox screen loads emails using `useMail()` (MailContext).
-> 👉 **[Click here to view Mail Context](../components/mailContext.md)**
-2. `MailContext.getItems()` calls `EmailService.getInboxMessages(...)`.
-3. All folder-based email requests (Inbox, Sent, Drafts, etc.) are routed through a **single common API**:
-/api/inboxapi|
-4. The API identifies the authenticated user from the Bearer token.
-5. Based on the user configuration, the API determines the email provider.
-6. The request is internally routed:
-- Outlook → Microsoft provider logic
-- Gmail → Google provider logic
-7. The API always returns a **unified response model**, which the frontend groups and renders.
-
-Conceptual routing:
-
-
-User Request → /api/inboxapi → Provider Flag Check
-├─→ Outlook Provider
-└─→ Gmail Provider
+* Fetch and render grouped inbox emails
+* Handle email updates (read/unread, flags, categories)
+* Manage folder-based filtering and search
+* Coordinate UI state with backend APIs via `EmailService`
 
 ---
 
-## Common API for All Folders
+## 2. Unified Entry Point
 
-A **single API** (`/api/inboxapi`) is used for **all mail folders**, including:
+### Primary Component
 
-- Inbox
-- Sent Items
-- Drafts
-- Important
-- Custom folders
+`NewInboxEmails` (React Functional Component)
 
-Folder behavior is controlled using request parameters (such as folder id/type), not separate APIs.
+### Why a Single Entry Point
 
-This ensures:
+* Centralizes inbox-related logic
+* Ensures consistent state handling via `useMail` context
+* Simplifies integration for parent layouts and routing
 
-- Consistent behavior across folders
-- Shared paging and filtering logic
-- Easier maintenance and extensibility
+### Supported Operations
 
-[Inbox Documentation](../API/InboxApi.md)
-
----
-
-## Frontend Implementation
-
-### Inbox UI Component
-
-The Inbox UI is implemented in `NewInboxEmails` and includes:
-
-- Header and filter menu
-- Toggle buttons: **Unread / Read / All**
-- Debounced search input
-- Grouped infinite list (`ControlledGroupList`)
-- Context menu actions (right-click)
+* List inbox emails (grouped & paginated)
+* Search emails (debounced)
+* Update email status (read/unread)
+* Flag / unflag emails with due dates
+* Assign or clear categories
+* Archive and delete emails
 
 ---
 
-## View Toggles (Unread / Read / All)
+## 3. Input Models
 
-Inbox view toggles are controlled through `listParams.inboxViewType`:
+### Component Props
 
-- `unread`
-- `read`
-- `all`
-
-When the view changes:
-
-- `selectedMail` is cleared
-- Paging state (`nextPageToken`) is reset
-- Emails are refetched using the common Inbox API
+| Property      | Type                   | Purpose                                         |
+| ------------- | ---------------------- | ----------------------------------------------- |
+| `categories`  | `any[]`                | List of available categories for tagging emails |
+| `onItemClick` | `(id: string) => void` | Triggered when an email item is selected        |
+| `resize`      | `boolean`              | (Reserved) UI resize trigger                    |
 
 ---
 
-## Search
+## 4. Core Concepts / Normalization Logic
 
-Search is implemented using a debounced input (500ms).
+### Email Normalization
 
-Behavior:
+* Missing subject → `(No subject)`
+* Missing snippet → `(No preview is available)`
+* Sender parsing via RegEx to extract name and email
 
-- User types in the search box
-- `updateParams({ search, nextPageToken: undefined })` is called
-- The next fetch uses the updated search term
-- Search is reset automatically when switching folders
+### Search Normalization
 
----
+* Debounced (500ms) updates to prevent API flooding
+* Folder change resets search state
 
-## Grouped Infinite List
+### Edge Cases
 
-Inbox uses a grouped list renderer (`ControlledGroupList`).
-
-- Emails are grouped based on the active sort mode
-- Default grouping is by **date buckets** (Today, Yesterday, etc.)
-
-Infinite scroll behavior:
-
-- `onLoadMore` calculates the offset
-- Calls `onScroll(start, PAGE, 'inbox')`
-- Additional data is fetched via continuation tokens
-- Results are merged without duplicates
+* Empty inbox renders a fallback UI
+* Context menu hidden during loading states
 
 ---
 
-## Context Menu Actions
+## 5. Base Object Construction
 
-Right-clicking an email opens a contextual menu with the following actions.
+### EmailUpdateModel
 
-### Archive
+Reusable update payload sent to backend APIs.
 
-- Moves the email out of Inbox
-- Updates local cache using `EmailUpdateTypes.archive`
+**Why It Exists**
 
-### Delete
+* Prevents partial or conflicting updates
+* Enforces update intent via `EmailUpdateType`
 
-- Moves the email to Deleted Items
-- Updates local cache and removes it from the list
+**Optimizations**
 
-### Mark Read / Unread
-
-- Updates read state
-- If the current view is filtered (Unread/Read), items may disappear automatically
-
-### Flag
-
-Supports:
-
-- Today
-- Tomorrow
-- This Week
-- Next Week
-- Mark Complete
-- Clear Flag
-
-Updates flag state locally using `EmailUpdateTypes.flag`.
-
-### Categories
-
-- Assign category
-- Clear category
-
-Local state merges categories safely and prevents duplicates.
+* Undefined fields are ignored by backend
+* Minimizes payload size
 
 ---
 
-## Folder-Specific View Logic
+## 6. Internal Helpers / Services
 
-Although the API is common, the frontend applies **folder-specific view logic**:
+### `useMail` Context
 
-- Inbox → `inboxViewType`
-- Drafts → `draftViewType`
-- Sent Items → `sentViewType`
-- Other folders → `viewType`
+* Centralized state for folders, emails, loading, pagination
+* Prevents prop drilling
 
-This allows each folder to maintain its own Read / Unread / All state.
+### `EmailService`
 
----
+* Abstracts API communication
+* Provider-agnostic (REST / Graph / Gmail / Outlook adaptable)
 
-## Paging and Continuation Tokens
+### Helper Functions
 
-Paging is handled using continuation tokens returned by the common Inbox API.
-
-Tokens are stored per folder cache:
-
-- `inboxMails.nextToken`
-- `sentMails.nextToken`
-- `draftMails.nextToken`
-
-Behavior:
-
-- If no token exists, scrolling stops
-- If a token exists, the next page is fetched
-- Items are merged without duplication using email `id`
+* `getFlagDates()` – Computes follow-up dates
+* `getUniqueItemCount()` – Pagination safety
 
 ---
 
-## Sorting and Grouping
+## 7. Execution Flow by Action Type
 
-Sorting and grouping are handled on the frontend using `sortEmailsOptimized(...)`.
+### Read / Unread
 
-### Supported Sort Modes
+**Trigger:** Toggle or context menu
 
-- `date` (default)
-  - Today
-  - Yesterday
-  - This Week
-  - Last Week
-  - This Month
-  - Last Month
-  - Month names
-  - Year buckets
-- `category`
-- `importance`
-- `flagStatus`
-- `from`
-- `subject`
+1. Build `EmailUpdateModel`
+2. Call `EmailService.updateMessage`
+3. Update local store via `updateEmails`
 
-Within each group, emails are sorted by date based on `sortOrder`.
+### Flag / Follow-up
 
----
+**Trigger:** Context menu selection
 
-## Refresh Behavior
+1. Compute dates (preset or explicit)
+2. Send flag model to backend
+3. Sync selected mail if open
 
-Inbox refresh uses multiple strategies to keep data up to date.
+### Category Update
 
-### Inbox Polling (Every 30 Seconds)
+**Trigger:** Context menu
 
-When Inbox is the active folder:
+1. Update category ID
+2. Optimistically update UI
 
-- Periodic polling fetches the latest emails
-- New emails are merged at the top
-- Folder counters are updated automatically
+### Archive / Delete
+
+**Trigger:** Context menu
+
+1. Call `moveFolder`
+2. Remove email from inbox state
 
 ---
 
-### Refresh on Focus / Connectivity Change
+## 8. Attachment / Asset Handling
 
-An automatic refresh is triggered when:
+> **Not Applicable**
 
-- The browser tab becomes visible
-- Network connectivity changes
-- Email mutations occur
-
-All refresh actions are throttled to avoid excessive API calls.
+This module only manages metadata and listing. Attachments are handled in the email detail module.
 
 ---
 
-## Common API Reference
+## 9. Scheduling / Metadata Handling
 
-All folder-based email operations use:
+### Follow-up Flags
 
+| Field               | Description                     |
+| ------------------- | ------------------------------- |
+| `startDateTime`     | Follow-up start                 |
+| `dueDateTime`       | Due date                        |
+| `completedDateTime` | Completion timestamp            |
+| `flagStatus`        | Flagged / Complete / NotFlagged |
 
-GET /api/inboxapi
+**Validation Rules**
 
-Authorization: Bearer <token>
-
-Key characteristics:
-
-- Single API for all folders
-- Provider-agnostic
-- Folder behavior controlled by parameters
-- Unified response format for Gmail and Outlook
-
----
-
-## Response Shape
-
-The common Inbox API returns a unified paged response containing:
-
-- `items`: list of email items
-- `continuationToken`: optional token for next page
-
-The frontend transforms the returned items into grouped lists using `sortEmailsOptimized(...)`.
+* Dates formatted as `DD/MM/YYYY`
+* `Complete` clears due dates
 
 ---
 
-## Common UI State Updates
+## 10. Error Handling Strategy
 
-### Read / Unread Updates
+### Approach
 
-- Local state updates immediately
-- Filtered views auto-adjust if the item no longer matches
+* Promise-based error capture
+* Toast-based user feedback (`AOToast`)
 
-### Delete / Archive Updates
+### Why This Strategy
 
-- Item is removed from local grouped caches
-- Auto refresh reconciles counts and server state
+* Non-blocking UI
+* Immediate user visibility
 
-### Flag Updates
+### Benefits
 
-- Flag state updates in list and detail view (if open)
-
-### Category Updates
-
-- Categories are merged locally
-- Clearing a category resets the category list for that email
+* Consistent UX
+* Easy instrumentation and logging
 
 ---
 
-## Key Takeaways
+## 11. Design Principles
 
-👉 [One common API](../API/InboxApi.md) powers all folders
-- Frontend logic is fully provider-agnostic
-- Gmail and Outlook behave identically in the UI
-- Paging, filtering, and grouping are consistent everywhere
-- The architecture is scalable and easy to extend
+* **Single Source of Truth** via context
+* **Optimistic UI Updates**
+* **Provider Agnostic Backend**
+* **Debounced IO Operations**
 
-This design ensures a predictable, high-performance inbox experience regardless of the underlying email provider.
+### Scalability
+
+* Infinite scrolling
+* Group-based rendering
+* Minimal re-renders
+
+---
+
+## 12. Mermaid Diagrams
+
+### Overall Flowchart
+
+```mermaid
+flowchart TD
+UI[User Action] --> Inbox[NewInboxEmails]
+Inbox --> Context[useMail Context]
+Context --> API[EmailService]
+API --> Context
+Context --> UI
+```
+
+### Sequence Diagram
+
+```mermaid
+sequenceDiagram
+User->>UI: Click / Right Click
+UI->>useMail: Update Params
+useMail->>EmailService: API Call
+EmailService-->>useMail: Response
+useMail-->>UI: State Update
+```
+
+### Update / Patch Flow
+
+```mermaid
+flowchart LR
+Action --> BuildModel
+BuildModel --> APIUpdate
+APIUpdate --> StoreUpdate
+StoreUpdate --> UIRefresh
+```
+
+
+---
+
+## 13. Final Outcome
+
+### What This Design Achieves
+
+* Clean separation of UI, state, and services
+* High-performance inbox rendering
+* Easy extensibility for new actions
+
+### Benefits
+
+* **UI:** Responsive and predictable
+* **API:** Clean contracts
+* **Scalability:** Supports large inboxes
+
+---
+
+## Additional Architecture Sections
+
+## DFD (Data Flow Diagram)
+
+```mermaid
+flowchart TD
+    UI[Inbox UI / Client] -->|Query Params| API[Inbox API - GetMessages]
+    API -->|Auth Token| Graph[Microsoft Graph SDK]
+    Graph -->|Filtered Messages| API
+    API -->|Normalize & Map| Mapper[EmailsListItem Mapper]
+    Mapper -->|PagedData| API
+    API --> UI
+```
+
+## Process Flow
+
+```mermaid
+flowchart LR
+    Start[Client Requests Inbox] --> Params[Build Filters & Params]
+    Params --> GraphCall[GraphServiceClient.Messages.Get]
+    GraphCall --> GraphResp[MessageCollectionResponse]
+    GraphResp --> ReplyCount[Fetch Reply Count per Conversation]
+    ReplyCount --> Normalize[Normalize Message Fields]
+    Normalize --> Page[Build PagedData]
+    Page --> End[Return Response]
+```
+
+## ER Diagram
+
+```mermaid
+erDiagram
+    USER ||--o{ MAILFOLDER : owns
+    MAILFOLDER ||--o{ EMAIL : contains
+    EMAIL ||--o{ ATTACHMENT : has
+    EMAIL ||--o{ CATEGORY : tagged_with
+    EMAIL ||--|| FLAG : has
+    EMAIL ||--o{ RECIPIENT : sent_to
+
+    USER {
+        string userId
+    }
+
+    MAILFOLDER {
+        string id
+        string name
+    }
+
+    EMAIL {
+        string id
+        string subject
+        datetime receivedDateTime
+        datetime sentDateTime
+        boolean isRead
+        boolean hasAttachments
+        string importance
+        string conversationId
+    }
+
+    ATTACHMENT {
+        string id
+        string name
+    }
+
+    CATEGORY {
+        string name
+    }
+
+    FLAG {
+        string flagStatus
+        datetime startDateTime
+        datetime dueDateTime
+        datetime completedDateTime
+    }
+
+    RECIPIENT {
+        string email
+        string name
+    }
+```
+
+## Entity Definition
+
+### Email Entity
+
+* id
+* subject
+* snippet
+* from
+* isRead
+* categories[]
+* flag
+
+## Authentication / APIs
+
+* Assumes authenticated session
+* Token-based API access via EmailService
+
+## Testing Guide
+
+* Unit test helper functions
+* Mock `EmailService`
+* UI tests for context menu actions
+
+## References
+
+* Fluent UI
+* React Context API
+* Day.js
+* Lodash debounce
