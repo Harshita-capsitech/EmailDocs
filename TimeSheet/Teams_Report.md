@@ -13,44 +13,73 @@ The **Team Report** module aggregates and presents time usage, efficiency, and a
 ## DFD (Data Flow Diagram)
 ```mermaid
 flowchart TD
-    AdminUser["Admin or Manager User"]
-    UI["Browser UI"]
-    Reports["Overview & Reports"]
-    Communication["Communication"]
-    Sales["Quotes & Sales"]
-    UserStats["User Stats"]
-    
-    Contact["Contact"]
-    PhoneCall["Phone Call"]
-    BusinessInvoice["Business Invoice"]
+  AdminUser["Admin or Manager User"]
+  UI["Browser UI"]
+  Reports["Overview & Reports"]
+  Communication["Communication"]
+  Sales["Quotes & Sales"]
+  UserStats["User Stats"]
+  
+  Contact["Contact"]
+  PhoneCall["Phone Call"]
+  BusinessInvoice["Business Invoice"]
 
-    AdminUser --> UI
-    UI --> Reports
-    UI --> Communication
-    UI --> Sales
-    UI --> UserStats
-    Reports --> Contact
-    Reports --> BusinessInvoice
-    Communication --> PhoneCall
-    Sales --> BusinessInvoice
-    UserStats --> Reports
+  AdminUser e1@==> UI
+  UI e2@==> Reports
+  UI e3@==> Communication
+  UI e4@==> Sales
+  UI e5@==> UserStats
+  Reports e6@==> Contact
+  Reports e7@==> BusinessInvoice
+  Communication e8@==> PhoneCall
+  Sales e9@==> BusinessInvoice
+  UserStats e10@==> Reports
+
+  e1@{ animate: true }
+  e2@{ animate: true }
+  e3@{ animate: true }
+  e4@{ animate: true }
+  e5@{ animate: true }
+  e6@{ animate: true }
+  e7@{ animate: true }
+  e8@{ animate: true }
+  e9@{ animate: true }
+  e10@{ animate: true }
 ```
 ## Process Flow
 
-1. **Admin/Manager Accesses Dashboard:**
-   - The manager accesses the team report dashboard to view the time usage and efficiency data for the selected team(s).
-   
-2. **Request Data:**
-   - The dashboard requests data from the backend APIs for the selected time range.
-   
-3. **Data Retrieval:**
-   - The backend processes the request, aggregating data from the `UserSessionPageView` collection, filtering by team and date range, and calculating time usage and efficiency.
-   
-4. **Data Response:**
-   - The frontend receives the aggregated data, including team member time usage, total available time, and efficiency metrics.
-   
-5. **Display Report:**
-   - The data is displayed in the dashboard, where the admin can review the report for individual members and the overall team.
+### 1) Admin/Manager Accesses Dashboard
+
+```mermaid
+%%{init: {"flowchart":{"curve":"monotoneY"}} }%%
+flowchart TB
+    A@{ shape: sm-circ, label: "Start" }
+
+    step1@{ shape: stadium, label: "Admin/Manager \nAccesses Dashboard" }
+    step2@{ shape: fr-rect, label: "Dashboard \nRequests Data (API call)" }
+    step3@{ shape: cyl, label: "Backend Aggregation\nfrom UserSessionPageView" }
+    step4@{ shape: rect, label: "Frontend \nReceives Aggregated Data" }
+    step5@{ shape: curv-trap, label: "Display \nTeam/Member Report" }
+    B@{ shape: dbl-circ, label: "End" }
+
+    A e1@==> step1
+    step1 e2@==> step2
+    step2 e3@==> step3
+    step3 e4@==> step4
+    step4 e5@==> step5
+    step5 e6@==> B
+
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+
+    %% Optional: add style for clarity
+    style step3 fill:#d9f6fb,stroke:#09999a,stroke-width:2px
+    style step5 fill:#faeec7,stroke:#e1aa13,stroke-width:2px
+```
 
 ## ER Diagram
 ```mermaid
@@ -156,8 +185,7 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
    Refer to the backend API documentation for detailed information about the Team Report endpoints and data structures.
   
 - **Frontend Code**:  
-   The frontend code for fetching and displaying the team report is located in `NewTeamsReport.tsx`. The frontend interacts with the backend API to retrieve and display data based on the selected filters 【10†source】.
+   The frontend code for fetching and displaying the team report is located in `NewTeamsReport.tsx`. The frontend interacts with the backend API to retrieve and display data based on the selected filters.
 
 ---
 
-End of Documentation
