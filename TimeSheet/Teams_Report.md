@@ -12,73 +12,83 @@ The **Team Report** module aggregates and presents time usage, efficiency, and a
 
 ## DFD (Data Flow Diagram)
 ```mermaid
-flowchart TD
-  AdminUser["Admin or Manager User"]
-  UI["Browser UI"]
-  Reports["Overview & Reports"]
-  Communication["Communication"]
-  Sales["Quotes & Sales"]
-  UserStats["User Stats"]
-  
-  Contact["Contact"]
-  PhoneCall["Phone Call"]
-  BusinessInvoice["Business Invoice"]
+---
+config:
+  layout: dagre
+---
+flowchart TB
+    AdminUser["Admin or Manager User"] e1@-.-> UI["Browser UI"]
+    UI e2@--> Reports["Overview & Reports"]
+    UI L_UI_Communication_0@-.-> Communication["Communication"] & Sales["Quotes & Sales"] & UserStats["User Stats"]
+    Reports e6@-.-> Contact["Contact"] & BusinessInvoice["Business Invoice"]
+    Communication e8@==> PhoneCall["Phone Call"]
+    Sales e9@-.-> BusinessInvoice
+    UserStats e10@-.-> Reports
 
-  AdminUser e1@==> UI
-  UI e2@==> Reports
-  UI e3@==> Communication
-  UI e4@==> Sales
-  UI e5@==> UserStats
-  Reports e6@==> Contact
-  Reports e7@==> BusinessInvoice
-  Communication e8@==> PhoneCall
-  Sales e9@==> BusinessInvoice
-  UserStats e10@==> Reports
+    style AdminUser fill:#FFFFFF,stroke:#616161
+    style UI stroke:#616161
+    style Reports stroke:#757575
+    style Communication stroke:#616161
+    style Sales stroke:#757575
+    style UserStats stroke:#616161
+    style Contact stroke:#757575
+    style BusinessInvoice stroke:#757575
+    style PhoneCall stroke:#757575
 
-  e1@{ animate: true }
-  e2@{ animate: true }
-  e3@{ animate: true }
-  e4@{ animate: true }
-  e5@{ animate: true }
-  e6@{ animate: true }
-  e7@{ animate: true }
-  e8@{ animate: true }
-  e9@{ animate: true }
-  e10@{ animate: true }
+    e1@{ animate: true } 
+    e2@{ animate: true, curve: natural } 
+    L_UI_Communication_0@{ curve: natural, animation: fast } 
+    L_UI_Sales_0@{ animation: fast } 
+    L_UI_UserStats_0@{ animation: fast } 
+    e6@{ animate: true } 
+    L_Reports_BusinessInvoice_0@{ animation: fast } 
+    e8@{ animate: true } 
+    e9@{ animate: true } 
+    e10@{ animate: true, curve: natural }
 ```
 ## Process Flow
 
 ### 1) Admin/Manager Accesses Dashboard
 
 ```mermaid
-%%{init: {"flowchart":{"curve":"monotoneY"}} }%%
-flowchart TB
-    A@{ shape: sm-circ, label: "Start" }
+---
+config:
+  flowchart:
+    curve: monotoneY
+  theme: neutral
+  look: classic
+---
+flowchart LR
+    A["Start"] e1@==> step1(["Admin/Manager 
+Accesses Dashboard"])
+    step1 e2@==> step2["Dashboard 
+Requests Data (API call)"]
+    step2 e3@==> step3["Backend Aggregation
+from UserSessionPageView"]
+    step3 e4@==> step4["Frontend 
+Receives Aggregated Data"]
+    step4 e5@==> step5["Display 
+Team/Member Report"]
+    step5 e6@==> B["End"]
 
-    step1@{ shape: stadium, label: "Admin/Manager \nAccesses Dashboard" }
-    step2@{ shape: fr-rect, label: "Dashboard \nRequests Data (API call)" }
-    step3@{ shape: cyl, label: "Backend Aggregation\nfrom UserSessionPageView" }
-    step4@{ shape: rect, label: "Frontend \nReceives Aggregated Data" }
-    step5@{ shape: curv-trap, label: "Display \nTeam/Member Report" }
-    B@{ shape: dbl-circ, label: "End" }
+    A@{ shape: sm-circ}
+    step2@{ shape: fr-rect}
+    step3@{ shape: cyl}
+    step4@{ shape: rect}
+    step5@{ shape: curv-trap}
+    B@{ shape: dbl-circ}
+    style step1 fill:#FFFFFF,stroke:#424242
+    style step2 fill:#FFFFFF
+    style step3 fill:#FFFFFF,stroke:#757575,stroke-width:2px
+    style step4 fill:#FFFFFF
+    style step5 fill:#FFFFFF,stroke:#757575,stroke-width:2px
 
-    A e1@==> step1
-    step1 e2@==> step2
-    step2 e3@==> step3
-    step3 e4@==> step4
-    step4 e5@==> step5
-    step5 e6@==> B
-
-    e1@{ animate: true }
-    e2@{ animate: true }
-    e3@{ animate: true }
-    e4@{ animate: true }
-    e5@{ animate: true }
+    e1@{ animate: true } 
+    e2@{ animate: true } 
+    e3@{ animate: true } 
+    e4@{ animate: true } 
+    e5@{ animate: true } 
     e6@{ animate: true }
-
-    %% Optional: add style for clarity
-    style step3 fill:#d9f6fb,stroke:#09999a,stroke-width:2px
-    style step5 fill:#faeec7,stroke:#e1aa13,stroke-width:2px
 ```
 
 ## ER Diagram
