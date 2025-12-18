@@ -12,45 +12,84 @@ The **Team Report** module aggregates and presents time usage, efficiency, and a
 
 ## DFD (Data Flow Diagram)
 ```mermaid
-flowchart TD
-    AdminUser["Admin or Manager User"]
-    UI["Browser UI"]
-    Reports["Overview & Reports"]
-    Communication["Communication"]
-    Sales["Quotes & Sales"]
-    UserStats["User Stats"]
-    
-    Contact["Contact"]
-    PhoneCall["Phone Call"]
-    BusinessInvoice["Business Invoice"]
+---
+config:
+  layout: dagre
+---
+flowchart TB
+    AdminUser["Admin or Manager User"] e1@-.-> UI["Browser UI"]
+    UI e2@--> Reports["Overview & Reports"]
+    UI L_UI_Communication_0@-.-> Communication["Communication"] & Sales["Quotes & Sales"] & UserStats["User Stats"]
+    Reports e6@-.-> Contact["Contact"] & BusinessInvoice["Business Invoice"]
+    Communication e8@==> PhoneCall["Phone Call"]
+    Sales e9@-.-> BusinessInvoice
+    UserStats e10@-.-> Reports
 
-    AdminUser --> UI
-    UI --> Reports
-    UI --> Communication
-    UI --> Sales
-    UI --> UserStats
-    Reports --> Contact
-    Reports --> BusinessInvoice
-    Communication --> PhoneCall
-    Sales --> BusinessInvoice
-    UserStats --> Reports
+    style AdminUser fill:#FFFFFF,stroke:#616161
+    style UI stroke:#616161
+    style Reports stroke:#757575
+    style Communication stroke:#616161
+    style Sales stroke:#757575
+    style UserStats stroke:#616161
+    style Contact stroke:#757575
+    style BusinessInvoice stroke:#757575
+    style PhoneCall stroke:#757575
+
+    e1@{ animate: true } 
+    e2@{ animate: true, curve: natural } 
+    L_UI_Communication_0@{ curve: natural, animation: fast } 
+    L_UI_Sales_0@{ animation: fast } 
+    L_UI_UserStats_0@{ animation: fast } 
+    e6@{ animate: true } 
+    L_Reports_BusinessInvoice_0@{ animation: fast } 
+    e8@{ animate: true } 
+    e9@{ animate: true } 
+    e10@{ animate: true, curve: natural }
 ```
 ## Process Flow
 
-1. **Admin/Manager Accesses Dashboard:**
-   - The manager accesses the team report dashboard to view the time usage and efficiency data for the selected team(s).
-   
-2. **Request Data:**
-   - The dashboard requests data from the backend APIs for the selected time range.
-   
-3. **Data Retrieval:**
-   - The backend processes the request, aggregating data from the `UserSessionPageView` collection, filtering by team and date range, and calculating time usage and efficiency.
-   
-4. **Data Response:**
-   - The frontend receives the aggregated data, including team member time usage, total available time, and efficiency metrics.
-   
-5. **Display Report:**
-   - The data is displayed in the dashboard, where the admin can review the report for individual members and the overall team.
+### 1) Admin/Manager Accesses Dashboard
+
+```mermaid
+---
+config:
+  flowchart:
+    curve: monotoneY
+  theme: neutral
+  look: classic
+---
+flowchart LR
+    A["Start"] e1@==> step1(["Admin/Manager 
+Accesses Dashboard"])
+    step1 e2@==> step2["Dashboard 
+Requests Data (API call)"]
+    step2 e3@==> step3["Backend Aggregation
+from UserSessionPageView"]
+    step3 e4@==> step4["Frontend 
+Receives Aggregated Data"]
+    step4 e5@==> step5["Display 
+Team/Member Report"]
+    step5 e6@==> B["End"]
+
+    A@{ shape: sm-circ}
+    step2@{ shape: fr-rect}
+    step3@{ shape: cyl}
+    step4@{ shape: rect}
+    step5@{ shape: curv-trap}
+    B@{ shape: dbl-circ}
+    style step1 fill:#FFFFFF,stroke:#424242
+    style step2 fill:#FFFFFF
+    style step3 fill:#FFFFFF,stroke:#757575,stroke-width:2px
+    style step4 fill:#FFFFFF
+    style step5 fill:#FFFFFF,stroke:#757575,stroke-width:2px
+
+    e1@{ animate: true } 
+    e2@{ animate: true } 
+    e3@{ animate: true } 
+    e4@{ animate: true } 
+    e5@{ animate: true } 
+    e6@{ animate: true }
+```
 
 ## ER Diagram
 ```mermaid
@@ -156,8 +195,7 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
    Refer to the backend API documentation for detailed information about the Team Report endpoints and data structures.
   
 - **Frontend Code**:  
-   The frontend code for fetching and displaying the team report is located in `NewTeamsReport.tsx`. The frontend interacts with the backend API to retrieve and display data based on the selected filters 【10†source】.
+   The frontend code for fetching and displaying the team report is located in `NewTeamsReport.tsx`. The frontend interacts with the backend API to retrieve and display data based on the selected filters.
 
 ---
 
-End of Documentation
