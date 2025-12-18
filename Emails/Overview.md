@@ -298,8 +298,6 @@ Represents email folders.
 
 
 
-# API Endpoints Documentation
-
 ## **API Endpoints:**
 
 | **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
