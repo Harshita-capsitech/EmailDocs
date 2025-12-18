@@ -11,6 +11,9 @@ The **Team Report** module aggregates and presents time usage, efficiency, and a
 - Allows for filtering by date range, including options to include or exclude weekends.
 
 ## DFD (Data Flow Diagram)
+
+This diagram outlines the data flow between various components of the system, showing how the admin/manager interacts with the UI, the communication and reports modules, and other key features.
+
 ```mermaid
 ---
 config:
@@ -45,10 +48,19 @@ flowchart TB
     e8@{ animate: true } 
     e9@{ animate: true } 
     e10@{ animate: true, curve: natural }
+
 ```
 ## Process Flow
 
-### 1) Admin/Manager Accesses Dashboard
+This diagram represents the process flow of how an Admin or Manager accesses the dashboard and views team or member reports. The steps are as follows:
+
+1. **Start**: The process begins when the Admin or Manager initiates the flow.
+2. **Admin/Manager Accesses Dashboard**: The Admin or Manager logs into the system and accesses the dashboard.
+3. **Dashboard Requests Data (API call)**: The dashboard sends a request to the backend API to fetch data.
+4. **Backend Aggregation from UserSessionPageView**: The backend processes and aggregates the data based on the user session.
+5. **Frontend Receives Aggregated Data**: The frontend receives the aggregated data from the backend.
+6. **Display Team/Member Report**: Finally, the frontend displays the report for the team or member based on the received data.
+7. **End**: The process ends once the report is displayed.
 
 ```mermaid
 ---
@@ -91,6 +103,7 @@ Team/Member Report"]
     e4@{ animate: true } 
     e5@{ animate: true } 
     e6@{ animate: true }
+
 ```
 
 ## ER Diagram
@@ -156,29 +169,9 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 
 ### API Endpoints
 
-- **GetTeamReport (Backend)**  
-  **Method:** `GET`  
-  **Endpoint:** `/teamsreport/{teamId}/TeamReport`  
-  **Query Parameters:**
-  - `teamId`: The ID of the team to retrieve the report for.
-  - `fromDate`: The start date for the report.
-  - `toDate`: The end date for the report.
-  - `isWeekendIncluded`: A boolean flag to include/exclude weekends.
-
-### Frontend API Call:
-- **Route**: `/teamsreport`
-- **Method**: `GET`
-- **Parameters**:
-  - `start`, `length`, `search`, `sortCol`, `sortDir`, `fromDate`, `toDate`
-
-### Backend Method:
-- **Route**: `/{teamId}/TeamReport`
-- **Method**: `GET`
-- **Parameters**:
-  - `teamId`: The ID of the team
-  - `fromDate`: Start date for the report (optional)
-  - `toDate`: End date for the report (optional)
-  - `isWeekendIncluded`: Boolean flag to include/exclude weekends (optional)
+| **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
+|------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
+| **Get Team Report (Backend)**      | GET                           | [/teamsreport/{teamId}/TeamReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
 
 ## Testing Guide
