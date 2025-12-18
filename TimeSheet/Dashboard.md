@@ -67,59 +67,54 @@ flowchart TD
 
 ## Process Flow
 
-### 1) Admin Timesheet Page Load
-
 ```mermaid
+---
+config:
+  layout: elk
+---
 flowchart LR
-    %% Neutral class definitions
-    classDef ui fill:#e3ecfa,stroke:#657693,stroke-width:2px;
-    classDef service fill:#e5f7ef,stroke:#3f908d,stroke-width:2px;
-    classDef api fill:#e7ebed,stroke:#425057,stroke-width:2px;
+ subgraph MWS["Middleware Services Layer"]
+    direction TB
+        RS["ReportService"]
+        PCS["PhoneCallService"]
+        TS["UserTimesheetService"]
+  end
+    UI["NewAdminTimeSheet UI"] ui2rs@-- Overview, Sales &amp; Quotes --> RS
+    UI ui2pcs@-- Communication Overview --> PCS
+    UI ui2ts@-- User Stats --> TS
+    RS rs2api@-- /Timesheet/Overview &amp; Quotes --> API["Backend API"]
+    PCS pcs2api@-- /Timesheet/Communication --> API
+    TS ts2api@-- /Timesheet/UserStats --> API
 
-    %% Nodes
-    UI(NewAdminTimeSheet UI):::ui
-    API(Backend API):::api
+    RS@{ shape: rect}
+    PCS@{ shape: rect}
+    TS@{ shape: rect}
+    UI@{ shape: rect}
+    API@{ shape: rect}
+     RS:::service
+     PCS:::service
+     TS:::service
+     UI:::ui
+     API:::api
+    classDef ui fill:#e3ecfa,stroke:#657693,stroke-width:2px
+    classDef service fill:#e5f7ef,stroke:#3f908d,stroke-width:2px
+    classDef api fill:#e7ebed,stroke:#425057,stroke-width:2px
+    style RS fill:#FFFFFF,stroke:#616161
+    style PCS fill:#FFFFFF,stroke:#424242
+    style TS fill:#FFFFFF,stroke:#424242
+    style UI fill:#FFFFFF,stroke:#424242
+    style API stroke:#424242,fill:#FFFFFF
+    style MWS fill:#FFFFFF,stroke:#424242
+    linkStyle 0 stroke:#000000,fill:none
+    linkStyle 3 stroke:#000000,fill:none
 
-    subgraph Middleware ["Middleware Services Layer"]
-        direction TB
-        RS(ReportService):::service
-        PCS(PhoneCallService):::service
-        TS(TimesheetService):::service
-    end
-
-    %% Animated Connections - UI to Middleware
-    UI ui2rs@-->|Overview, Sales & Quotes| RS
-    UI ui2pcs@-->|Comm Stats| PCS
-    UI ui2ts@-->|User Stats| TS
-
-    %% Animated Connections - Middleware to API
-    RS rs2api@-->|/Timesheet/Overview & Quotes| API
-    PCS pcs2api@-->|/Timesheet/Communication| API
-    TS ts2api@-->|/Timesheet/UserStats| API
-
-    %% -- Animate the edges
-    ui2rs@{ animation: slow }
-    ui2pcs@{ animation: slow }
-    ui2ts@{ animation: slow }
-    rs2api@{ animation: slow }
-    pcs2api@{ animation: slow }
+    ui2rs@{ curve: linear, animation: slow } 
+    ui2pcs@{ animation: slow } 
+    ui2ts@{ animation: slow } 
+    rs2api@{ animation: slow } 
+    pcs2api@{ animation: slow } 
     ts2api@{ animation: slow }
 ```
-
-### 2) UserStats (Top/Bottom Users) — High-level Logic
-
-**Goal:** Show only users who have meaningful activity, then compute relative position vs average.
-
-1. Parse date range.
-2. Load candidate users for the practice (optionally team-filtered).
-3. Aggregate activity totals per user (sum of module activity totals) for the date range.
-4. Enrich user list with their `TotalTime`.
-5. Remove users with `< 60 seconds` activity.
-6. Sort by `TotalTime` (asc/desc depending on “Top” vs “Bottom”).
-7. Compute average percent indicator per user (relative to overall average).
-8. Take 10% of the list (current code: `users.Count * 10 / 100`) and assign serial numbers.
-
----
 
 ##  ER Diagram
 
@@ -327,3 +322,4 @@ curl -s "$BASE_URL/UserStats?fromDate=01/12/2025&toDate=31/12/2025&teamId=&sortD
 ### Notes
 - The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
 - Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+
