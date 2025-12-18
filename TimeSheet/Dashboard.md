@@ -49,107 +49,108 @@ This section provides insights into communication activity within the organizati
 
 ```mermaid
 flowchart TD
-    %% Users & Frontend Layer
-    admin@{ shape: circle, label: "Admin/\nManager\nUser" }
-    frontend@{ shape: stadium, label: "React Frontend" }
-    admin fa@--> frontend
-
-    %% Report & Stats Feature Cards
-    timesheet@{ shape: notch-rect, label: "Timesheet\nReport Card" }
-    sales@{ shape: notch-rect, label: "Sales\nReport Card" }
-    comm@{ shape: notch-rect, label: "Communication\nOverview" }
-    quotes@{ shape: notch-rect, label: "Quotes\nReport Card" }
-    userstats@{ shape: notch-rect, label: "User Stats\nTable" }
-
-    frontend fb@--> timesheet
-    frontend fc@--> sales
-    frontend fd@--> comm
-    frontend fe@--> quotes
-    frontend ff@--> userstats
-
-    %% API communication (First step)
-    timesheet t1@--> tAPI@{ shape: rect, label: "API Call:\n/UserStats" }
-    sales t2@--> sAPI@{ shape: rect, label: "API Call:\n/SalesReport" }
-    comm t3@--> cAPI@{ shape: rect, label: "API Call:\n/Communication" }
-    quotes t4@--> qAPI@{ shape: rect, label: "API Call:\n/QuotesSales" }
-
-    %% Backend (business logic)
-    tAPI t5@--> tBL@{ shape: rect, label: "Backend Logic" }
-    sAPI t6@--> sBL@{ shape: rect, label: "Backend Logic" }
-    cAPI t7@--> cBL@{ shape: rect, label: "Backend Logic" }
-    qAPI t8@--> qBL@{ shape: rect, label: "Backend Logic" }
-
-    %% Backend API Controller (Second flowchart)
-    subgraph backendAPI [Backend API Layer]
-      direction TB
-      APIController@{ shape: stadium, label: "Backend\nAPI Controller" }
-      tBL bc1@--> APIController
-      sBL bc2@--> APIController
-      cBL bc3@--> APIController
-      qBL bc4@--> APIController
-
-      APIController bc5@--> MDBUserStats@{ shape: cyl, label: "MongoDB\nAggregation:\nUser Stats" }
-      APIController bc6@--> MDBSales@{ shape: cyl, label: "MongoDB\nAggregation:\nSales" }
-      APIController bc7@--> MDBComm@{ shape: cyl, label: "MongoDB\nAggregation:\nCommunication" }
-      APIController bc8@--> MDBQuotes@{ shape: cyl, label: "MongoDB\nAggregation:\nQuotes" }
-
-      MDBUserStats bc9@--> DBACK@{ shape: stadium, label: "Data Returned\nto Frontend" }
-      MDBSales bc10@--> DBACK
-      MDBComm bc11@--> DBACK
-      MDBQuotes bc12@--> DBACK
+    %% ========================================
+    %% FRONTEND LAYER - User Interface
+    %% ========================================
+    admin["👤 Admin/Manager User"]
+    frontend["React Frontend<br/>Dashboard"]
+    
+    admin --> frontend
+    
+    %% ========================================
+    %% REPORT COMPONENTS - Feature Cards
+    %% ========================================
+    subgraph ReportCards["📊 Report Components"]
+        direction LR
+        timesheet["⏱️ Timesheet<br/>Report"]
+        sales["💰 Sales<br/>Report"]
+        comm["📞 Communication<br/>Overview"]
+        quotes["📝 Quotes<br/>Report"]
     end
-
-    %% MongoDB data layer (Third flowchart)
-    backendDB@{ shape: cyl, label: "MongoDB" }
-    DBACK bc13@--> backendDB
-
-    backendDB db1@--> AppUserDB@{ shape: fr-rect, label: "ApplicationUserDB" }
-    backendDB db2@--> PhoneCallDB@{ shape: fr-rect, label: "PhoneCallDB" }
-    backendDB db3@--> BusinessInvoiceDB@{ shape: fr-rect, label: "BusinessInvoiceDB" }
-    backendDB db4@--> WebsiteQueryDB@{ shape: fr-rect, label: "WebsiteQueryDB" }
-
-    AppUserDB db5@--> FetchUserData@{ shape: rect, label: "Fetch\nUser Data" }
-    PhoneCallDB db6@--> FetchCommData@{ shape: rect, label: "Fetch\nCommunication Data" }
-    BusinessInvoiceDB db7@--> FetchSalesData@{ shape: rect, label: "Fetch\nSales Data" }
-    WebsiteQueryDB db8@--> FetchWebsiteQueries@{ shape: rect, label: "Fetch\nWebsite Queries" }
-
-    %% All animated flows
-    fa@{ animation: fast }
-    fb@{ animation: fast }
-    fc@{ animation: fast }
-    fd@{ animation: fast }
-    fe@{ animation: fast }
-    ff@{ animation: fast }
-    t1@{ animation: fast }
-    t2@{ animation: fast }
-    t3@{ animation: fast }
-    t4@{ animation: fast }
-    t5@{ animation: fast }
-    t6@{ animation: fast }
-    t7@{ animation: fast }
-    t8@{ animation: fast }
-    bc1@{ animation: fast }
-    bc2@{ animation: fast }
-    bc3@{ animation: fast }
-    bc4@{ animation: fast }
-    bc5@{ animation: fast }
-    bc6@{ animation: fast }
-    bc7@{ animation: fast }
-    bc8@{ animation: fast }
-    bc9@{ animation: fast }
-    bc10@{ animation: fast }
-    bc11@{ animation: fast }
-    bc12@{ animation: fast }
-    bc13@{ animation: fast }
-    db1@{ animation: fast }
-    db2@{ animation: fast }
-    db3@{ animation: fast }
-    db4@{ animation: fast }
-    db5@{ animation: fast }
-    db6@{ animation: fast }
-    db7@{ animation: fast }
-    db8@{ animation: fast }
-
+    
+    frontend --> ReportCards
+    
+    %% ========================================
+    %% API LAYER - Request Routing
+    %% ========================================
+    subgraph APILayer["🔌 API Endpoints"]
+        direction LR
+        api1["/api/UserStats"]
+        api2["/api/SalesReport"]
+        api3["/api/Communication"]
+        api4["/api/QuotesSales"]
+    end
+    
+    timesheet --> api1
+    sales --> api2
+    comm --> api3
+    quotes --> api4
+    
+    %% ========================================
+    %% BACKEND LAYER - Business Logic
+    %% ========================================
+    controller["🎯 Backend API Controller<br/><i>Processes requests & orchestrates data</i>"]
+    
+    api1 --> controller
+    api2 --> controller
+    api3 --> controller
+    api4 --> controller
+    
+    %% ========================================
+    %% DATABASE AGGREGATION - MongoDB Queries
+    %% ========================================
+    subgraph MongoAgg["🔍 MongoDB Aggregation Pipeline"]
+        direction TB
+        agg1["Aggregate User Stats<br/><i>Group by user, date range</i>"]
+        agg2["Aggregate Sales Data<br/><i>Sum invoices, calculate totals</i>"]
+        agg3["Aggregate Communication<br/><i>Count calls, duration stats</i>"]
+        agg4["Aggregate Quotes<br/><i>Status, conversion rates</i>"]
+    end
+    
+    controller --> MongoAgg
+    
+    %% ========================================
+    %% DATABASE LAYER - Data Sources
+    %% ========================================
+    subgraph MongoDB["💾 MongoDB Collections"]
+        direction LR
+        db1[("ApplicationUser<br/>Collection")]
+        db2[("PhoneCall<br/>Collection")]
+        db3[("BusinessInvoice<br/>Collection")]
+        db4[("WebsiteQuery<br/>Collection")]
+    end
+    
+    agg1 -.reads.-> db1
+    agg2 -.reads.-> db3
+    agg3 -.reads.-> db2
+    agg4 -.reads.-> db4
+    
+    %% ========================================
+    %% RESPONSE FLOW - Data Return Path
+    %% ========================================
+    response["📤 JSON Response<br/><i>Aggregated data returned</i>"]
+    
+    MongoAgg --> response
+    response --> frontend
+    
+    %% ========================================
+    %% STYLING
+    %% ========================================
+    classDef userStyle fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef frontendStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef apiStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef backendStyle fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef dbStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef responseStyle fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+    
+    class admin userStyle
+    class frontend frontendStyle
+    class timesheet,sales,comm,quotes frontendStyle
+    class api1,api2,api3,api4 apiStyle
+    class controller backendStyle
+    class agg1,agg2,agg3,agg4 backendStyle
+    class db1,db2,db3,db4 dbStyle
+    class response responseStyle
 ```
 
 ---
@@ -539,6 +540,7 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
 ### Notes
 - The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
 - Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+
 
 
 
