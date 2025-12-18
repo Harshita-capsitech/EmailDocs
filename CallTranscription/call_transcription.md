@@ -156,30 +156,10 @@ The system uses **JWT-based authentication** for securing access to the API endp
 ### API Endpoints
 
 1. **GET /PhoneCalls/{id}/Transcription**  
-   Fetches the transcription of the call recording, along with sentiment analysis and tone data.
-
-   **Request Example:**
-   ```js
-   axios.get('/PhoneCalls/{callId}/Transcription');
    ```
-
 2. **GET /PhoneCalls/{id}/Insights**  
-   Retrieves detailed insights including transcription and tone analysis for the call.
-
-   **Response Example:**
-   ```json
-   {
-     "transcription": "Hello, how can I assist you today?",
-     "tones": [
-       { "label": "joy", "score": 0.75 },
-       { "label": "neutral", "score": 0.15 }
-     ]
-   }
    ```
-
 3. **GET /BlobStorage/{callId}/Recording**  
-   Retrieves the MP3 recording stored in **Azure Blob Storage** for the given call.
-
 ---
 
 ## **Testing Guide**
