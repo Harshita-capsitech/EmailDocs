@@ -1,154 +1,179 @@
-# File Upload, Attachment Gallery & Schedule Send
+# **Attachment Gallery - Technical Documentation**
 
-## Overview
-This module provides a **complete email attachment and scheduling experience** used across Compose, Reply, and Forward flows. It includes:
-- A reusable **File Upload Drop Zone** with drag & drop, progress, retry, cancel, and optimistic delete
-- An **Attachment Gallery** for previewing, downloading, and batch actions
-- A **Schedule Send Modal** with timezone-safe scheduling and smart quick picks
+## 1. Overview
 
-The implementation is fully typed, UI-consistent (Fluent UI), and designed to work with both **Outlook (Graph)** and **Gmail** backends.
+### **High-Level Purpose of the Module:**
+The **Attachment Gallery** is a React component that displays a gallery of uploaded file attachments. The gallery allows users to view and download individual attachments, show or hide additional attachments, and supports bulk download of all attachments. The component dynamically adjusts its layout based on the number of attachments, providing a smooth and efficient user experience.
 
----
+### **What Problems It Solves:**
+- **Efficient Attachment Management**: Manages multiple attachments in a gallery-style interface, allowing users to interact with files easily.
+- **Progressive Display**: Displays a subset of attachments initially, allowing users to expand and view more if necessary.
+- **Bulk Download**: Provides a bulk download option to allow users to download all attachments at once.
+- **File Previews**: Supports file previews for images and file-type-specific icons for other attachments.
+- **Dynamic Interaction**: Allows users to download or view individual attachments and manage their visibility dynamically.
 
-## 1. FileUploadDropZone
-
-### Purpose
-Handles file selection and upload lifecycle, including:
-- Drag & drop + click-to-upload
-- Upload progress tracking
-- Retry / cancel uploads
-- Optimistic UI updates synced with parent state
-
-### Key Props
-| Prop | Type | Description |
-|----|----|----|
-| value | File[] | Authoritative uploaded files from parent |
-| maxSize | number | Max file size (default 30MB) |
-| accept | Accept | Allowed MIME types / extensions |
-| multiple | boolean | Allow multiple uploads |
-| onFilesDrop | fn | Upload handler with progress & cancel hooks |
-| onDelete | fn | Delete handler (parent-driven) |
-| onView | fn | View/preview handler |
-| onDragStateChange | fn | Drag active state callback |
-
-### Upload Lifecycle
-1. User drops or selects files
-2. Each file gets a **stable UID** (signature-based)
-3. `onFilesDrop` is called with:
-   - progress callback
-   - cancel registration
-4. UI reflects:
-   - Uploading
-   - Success
-   - Failed (Retry enabled)
-5. On delete:
-   - Upload is cancelled if in-progress
-   - File is removed optimistically
-   - Parent `value` sync finalizes removal
-
-### Design Highlights
-- Signature-based de-duplication (`name + size`)
-- Tombstone strategy to avoid flicker during parent updates
-- Upload cancellation support
-- Gradient progress bar with status-aware coloring
+### **Key Responsibilities:**
+- **Attachment Display**: Displays attachments in a grid layout, providing users with an overview of uploaded files.
+- **Pagination and Expansion**: Supports dynamic visibility of attachments, showing only a subset by default with an option to show more.
+- **Bulk Actions**: Supports actions like bulk download of attachments.
+- **Attachment Management**: Includes actions for viewing, downloading, and managing individual attachments.
 
 ---
 
-## 2. Attachment Gallery
+## 2. Data Flow Diagram (DFD)
 
-### Purpose
-Displays uploaded attachments in a responsive grid with:
-- Image previews
-- File-type icons
-- Secure preview blocking for unsafe files
-- Download and batch-download support
+### **Description:**
+The **Data Flow Diagram (DFD)** illustrates the flow of data through the **Attachment Gallery** component, from displaying attachments to managing actions such as viewing and downloading.
 
-### Props
-| Prop | Type | Description |
-|----|----|----|
-| attachments | any[] | Attachment metadata list |
-| maxVisible | number | Initial visible count |
-| onView | fn | Preview handler |
-| onDownload | fn | Download handler |
-| onDownloadAll | fn | Optional batch download |
-
-### Security Rules
-The gallery **blocks preview** for:
-- Executables (`.exe`, `.dll`, etc.)
-- Archives (`.zip`, `.rar`, `.7z`, etc.)
-
-These files remain downloadable but not previewable.
-
-### UX Behavior
-- Hover overlay with actions (View / Download)
-- Filename + size caption
-- Expand / collapse attachment list
-- Total size shown for large attachment sets
-
----
-
-## 3. Schedule Send Modal
-
-### Purpose
-Allows users to schedule email delivery using **timezone-correct logic** with smart defaults.
-
-### Features
-- Timezone-safe scheduling using "fake UTC" strategy
-- 5-minute granularity time slots
-- Validation against past times
-- Keyboard-accessible navigation
-
-### Quick Picks
-- This noon
-- This evening
-- Tomorrow morning
-- Later this week / Monday morning
-
-Quick picks automatically:
-- Adjust for timezone
-- Skip invalid times
-- Submit immediately
-
-### Data Contract
-```ts
-ScheduleValues {
-  followUpDate: "DD/MM/YYYY"
-  followUpHour: "01".."12"
-  followUpMinute: "00".."55"
-  followUpTT: "AM" | "PM"
-}
+```mermaid
+flowchart TD
+  A([👤 User]) edge1@--> B[📁 Select Attachments]
+    B edge2@--> C[🖼️ Display Attachments]
+    C edge3@--> D{📊 Manage Visibility}
+    D edge4@-->|Show More| E[🔍 Track User Actions]
+    D edge11@-->|Show Less| C
+    E edge5@--> F[👁️ View Attachment]
+    E edge6@--> G[⬇️ Download Attachment]
+    E edge7@--> H[📦 Download All]
+    H edge8@--> I[🚀 Bulk Download]
+    G edge9@--> J{✅ Update State}
+    I edge10@--> J
+    F edge12@--> K[🖥️ Preview File]
+    J edge13@--> L[✨ Success]
+    
+    edge1@{ animate: fast }
+    edge2@{ animate: fast }
+    edge3@{ animate: fast }
+    edge4@{ animate: fast }
+    edge5@{ animate: fast }
+    edge6@{ animate: fast }
+    edge7@{ animate: fast }
+    edge8@{ animate: fast }
+    edge9@{ animate: fast }
+    edge10@{ animate: fast }
+    edge11@{ animate: fast }
+    edge12@{ animate: fast }
+    edge13@{ animate: fast }
 ```
 
-### Validation Rules
-- Date must be today or later
-- Time must be in the future
-- Invalid or exhausted dates are disabled
-- Error feedback shown inline
+### **Key Components:**
+- **User**: Initiates actions such as selecting attachments and performing bulk actions.
+- **Select Attachments**: The user selects the attachments to be displayed in the gallery.
+- **Display Attachments**: The component renders the selected attachments in a gallery format.
+- **Manage Visibility**: Dynamically shows or hides additional attachments based on user interaction.
+- **Track User Actions**: Tracks actions performed by the user, such as viewing or downloading attachments.
+- **View/Download Attachments**: The user can view or download individual attachments.
+- **Bulk Download**: The user can download all attachments at once.
+- **Manage Attachment State**: Updates the state of attachments based on user actions (e.g., viewed, downloaded).
 
 ---
 
-## Accessibility & UX
-- Keyboard navigation supported throughout
-- ARIA labels on interactive elements
-- Focus trapping inside modal
-- Graceful fallback for unsupported previews
+## 3. Process Flow
+
+### **Description:**
+The Process Flow explains the sequential steps taken by the system to display and manage attachments within the gallery.
+
+1. **User Selects Attachments**:
+   - The user selects which attachments to display, either through a drag-and-drop interface or a file selection dialog.
+
+2. **Display Attachments**:
+   - The component renders a subset of the attachments in the gallery grid layout, showing only the first few attachments (based on maxVisible).
+
+3. **Manage Visibility**:
+   - The component checks if more attachments are available and provides an option to expand the gallery and show additional attachments.
+
+4. **Track User Actions**:
+   - User actions (viewing or downloading attachments) are tracked, allowing interaction with each file individually.
+
+5. **View/Download Attachments**:
+   - The user can click to view or download individual attachments.
+
+6. **Bulk Download**:
+   - The user can download all the attachments at once by clicking the Download all button.
 
 ---
 
-## Integration Notes
-- Designed to plug into **Compose / Reply / Forward** flows
-- Upload handler is backend-agnostic
-- Works with Graph chunk upload & Gmail multipart upload
-- Schedule values map directly to backend scheduling APIs
+## 4. Entity Relationship Diagram (ERD)
+
+### **Description:**
+The Entity Relationship Diagram (ERD) defines the relationships between files, users, and attachments within the system.
+
+```mermaid
+erDiagram
+    USER {
+        string username
+        string email
+    }
+    ATTACHMENT {
+        int attachment_id PK
+        string name
+        int size
+        string type
+    }
+    ATTACHMENT_FILE {
+        int file_id PK
+        string file_name
+        int file_size
+        string file_type
+    }
+
+    USER ||--o| ATTACHMENT : "uploads"
+    ATTACHMENT ||--o| ATTACHMENT_FILE : "has"
+```
+
+### **Key Entities:**
+- **USER**: Represents the user uploading and managing attachments.
+- **ATTACHMENT**: Represents a file attachment that is associated with a user.
+- **ATTACHMENT_FILE**: Represents the physical file data, including file size and type.
 
 ---
 
-## Summary
-This module delivers a **production-ready attachment and scheduling system** with:
-- Strong UX
-- Robust state management
-- Security-aware previews
-- Timezone-safe scheduling
+## 5. Entity Definitions
 
-It is reusable, extensible, and aligned with enterprise email workflows.
+### **USER:**
+- **username**: A unique identifier for the user uploading the attachments.
+- **email**: The user's email address used for communication and authentication.
 
+### **ATTACHMENT:**
+- **attachment_id**: A unique identifier for each attachment.
+- **name**: The name of the attachment.
+- **size**: The size of the attachment in bytes.
+- **type**: The MIME type of the attachment (e.g., image/png, application/pdf).
+
+### **ATTACHMENT_FILE:**
+- **file_id**: A unique identifier for the file data.
+- **file_name**: The name of the file.
+- **file_size**: The size of the file in bytes.
+- **file_type**: The MIME type of the file.
+
+---
+
+## 6. Authentication / APIs
+
+### **Authentication:**
+The system uses OAuth 2.0 for secure authentication, ensuring that users are authorized to upload, view, and delete attachments.
+
+### **APIs:**
+- **POST /uploadAttachment**: Uploads an attachment to the server.
+- **GET /getAttachments/{userId}**: Retrieves a list of attachments associated with the user.
+- **GET /downloadAttachment/{attachmentId}**: Downloads an individual attachment.
+- **DELETE /deleteAttachment/{attachmentId}**: Deletes a specific attachment from the server.
+
+---
+
+## 7. Testing Guide
+
+### **Unit Testing:**
+- **Test Attachment Display**: Ensure that the correct number of attachments is displayed based on the maxVisible property.
+- **Test Attachment Visibility**: Verify that the component correctly handles expanding and collapsing the attachment gallery.
+- **Test Download Actions**: Ensure that individual and bulk download actions work correctly.
+- **Test Error Handling**: Test that the system correctly handles errors when displaying or downloading attachments.
+
+### **Integration Testing:**
+- **Test API Endpoints**: Verify that the attachment upload, retrieval, and deletion APIs work as expected.
+- **Test User Authentication**: Ensure that only authorized users can upload or manage attachments.
+
+### **UI Testing:**
+- **Test UI Components**: Verify that the gallery correctly displays attachments in a responsive grid layout.
+- **Test File Previews**: Ensure that image files display thumbnails, and non-image files show the appropriate icons.
+- **Test File Actions**: Validate that file actions like view, download, and delete are functional and trigger the correct behaviors.
