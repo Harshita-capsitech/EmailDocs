@@ -227,19 +227,19 @@ erDiagram
 
 | **Description**                         | **HTTP Method** | **Endpoint**                                                                 |
 |-----------------------------------------|-----------------|-----------------------------------------------------------------------------|
-| **Send Email**                          | POST            | [/SendEmail](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Get Canned Messages**                 | GET             | [/CannedMessages](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Add New Draft**                       | POST            | [/SaveDraft](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Update Draft**                        | POST            | [/SaveDraft/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Get Draft Emails**                    | GET             | [/GetDraftMails](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Download Draft File**                 | GET             | [/DraftFileDownload](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Get Schedule Emails**                 | GET             | [/GetScheduleMails](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Add Schedule**                        | POST            | [/SaveSchedule](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Update Schedule**                     | POST            | [/SaveSchedule/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Update Schedule**                     | POST            | [/UpdateSchedule/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Get Schedule by ID**                  | GET             | [/schedule/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Send Scheduled Email**                | POST            | [/SendSchedule/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
-| **Download Schedule File**              | GET             | [/ScheduleFileDownload](https://emails.servicesuat.actingoffice.com/swagger/index.html](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
+| **Send Email**                          | POST            | [/SendEmail](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
+| **Get Canned Messages**                 | GET             | [/CannedMessages](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Add New Draft**                       | POST            | [/SaveDraft](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Update Draft**                        | POST            | [/SaveDraft/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Draft Emails**                    | GET             | [/GetDraftMails](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Download Draft File**                 | GET             | [/DraftFileDownload](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Schedule Emails**                 | GET             | [/GetScheduleMails](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Add Schedule**                        | POST            | [/SaveSchedule](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Update Schedule**                     | POST            | [/SaveSchedule/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Update Schedule**                     | POST            | [/UpdateSchedule/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Schedule by ID**                  | GET             | [/schedule/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Send Scheduled Email**                | POST            | [/SendSchedule/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Download Schedule File**              | GET             | [/ScheduleFileDownload](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
 
 ---
