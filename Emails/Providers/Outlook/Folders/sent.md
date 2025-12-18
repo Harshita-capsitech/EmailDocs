@@ -1,189 +1,158 @@
-
-# Technical Documentation for **Mail System Module**
+# **Mail System Module - Technical Documentation**
 
 ## 1. Overview
 
-### High-level Purpose of the Module:
-The **Mail System Module** is designed to provide an interface for managing emails, including reading, filtering, categorizing, flagging, and archiving emails within an application. It facilitates the seamless interaction between different folders (Inbox, Sent, Drafts, etc.), providing users with the ability to perform CRUD operations on emails while maintaining system performance through features like pagination, sorting, and caching.
+### High-Level Purpose of the Module:
+The **Mail System Module** is designed to provide an interface for managing emails in an application. It allows users to read, filter, categorize, flag, and archive emails seamlessly across multiple folders (e.g., Inbox, Sent, Drafts). The module facilitates CRUD operations on emails while ensuring system performance through pagination, sorting, and caching.
 
-### What Problems It Solves:
-- Provides a central hub for accessing and managing multiple email accounts and folders.
-- Supports filtering of emails based on criteria such as read/unread, flagged, important, or attachments.
-- Efficiently handles large volumes of emails through caching, pagination, and auto-refresh features.
-- Integrates with third-party services to provide features like email flagging and categorization.
+### Problems It Solves:
+- **Centralized Email Management**: Integrates multiple email accounts and folders in a unified interface.
+- **Advanced Email Filtering**: Supports filtering emails based on criteria such as read/unread status, flagged, importance, and attachments.
+- **Handling Large Volumes of Emails**: Optimizes the handling of large email data through caching, pagination, and auto-refresh.
+- **Integration with Third-Party Services**: Enhances features like email flagging, categorization, and organizational tools.
 
 ### Key Responsibilities:
-- **Fetching Email Data**: Retrieves emails from the mail server (e.g., Outlook) and processes them based on various filters.
-- **Email Display**: Displays emails in the user interface with options to sort, filter, and search.
-- **Email Actions**: Provides actions like marking as read/unread, archiving, deleting, flagging, and categorizing emails.
-- **Folder Management**: Allows users to switch between different email folders (Inbox, Sent, Drafts) and apply filters based on the folder.
-- **Auto-refresh**: Ensures the email data is kept up to date by periodically polling for new messages.
+- **Email Retrieval**: Fetches emails from the mail server (e.g., Outlook) and processes them based on filters.
+- **Email Display**: Provides a user interface for displaying emails, with options to sort, filter, and search.
+- **Email Actions**: Supports actions such as marking emails as read/unread, archiving, deleting, flagging, and categorizing.
+- **Folder Management**: Allows users to switch between email folders (Inbox, Sent, Drafts) and apply appropriate filters.
+- **Auto-Refresh**: Periodically fetches new emails to keep data up to date.
 
 ---
 
 ## 2. Data Flow Diagram (DFD)
 
 ### Description:
-The **Data Flow Diagram (DFD)** for the Mail System Module depicts the flow of data between external and internal components, showing how email data is processed and displayed in the system.
+The **Data Flow Diagram (DFD)** visually represents how email data flows between different system components, illustrating the interactions between users, APIs, and email servers.
 
 ```mermaid
 flowchart TD
-    A[User] -->|Login| B[Email Service]
-    B -->|Fetch Folders| C[Folder API]
-    C -->|Return Folder Data| B
-    B -->|Fetch Emails| D[Emails API]
-    D -->|Return Email Data| B
-    B -->|Return Emails| A
-    A -->|Perform Actions| E[Action API]
-    E -->|Update Email Data| D
-    D -->|Return Updated Data| E
-    E -->|Return Result| A
+    A[User] --> B[Login]
+    B --> C[Fetch Folders]
+    C --> D[Fetch Emails]
+    D --> E[Display Emails]
+    E --> F[User Action]
+    F --> G[Update Email]
+    G --> E
+
 ```
 
-### Key:
+### Key Components:
 - **User**: The end-user interacting with the system.
-- **Email Service**: The service that communicates with external email APIs.
-- **Folder API**: The external system that provides folder-related data (e.g., Inbox, Sent).
-- **Emails API**: The system that fetches email data from an external service like Outlook.
-- **Action API**: The API that handles actions like reading, marking, or deleting emails.
+- **Email Service**: A component that communicates with external email APIs (e.g., Outlook) to retrieve and manage emails.
+- **Folder API**: Provides data related to email folders (Inbox, Sent, Drafts).
+- **Emails API**: Fetches email content from external services.
+- **Action API**: Handles email actions like reading, marking, or deleting messages.
 
 ---
 
 ## 3. Process Flow
 
 ### Description:
-The **Process Flow** explains how the system handles the user actions from initiating an email fetch to applying actions like marking as read/unread or archiving an email.
+The Process Flow explains how the system handles user actions, from logging in to applying changes to emails (e.g., marking as read/unread or archiving).
 
 1. **User Logs In**:
-   - The user initiates a login process which authenticates them and provides necessary access tokens.
+   - The user logs in, and the system authenticates them, obtaining necessary access tokens for interaction.
 
 2. **Folder Fetch**:
-   - The system queries the Folder API to retrieve all available folders (Inbox, Sent, Drafts, etc.).
+   - The system queries the Folder API to retrieve all available folders (e.g., Inbox, Sent, Drafts).
 
 3. **Fetch Emails**:
-   - Based on the current folder, the system fetches emails using the Emails API.
+   - Based on the selected folder, the system calls the Emails API to fetch the list of emails.
 
 4. **Display Emails**:
-   - The fetched emails are displayed in the UI with options for filtering and sorting.
+   - Fetched emails are displayed in the UI, providing sorting, filtering, and search options for the user.
 
 5. **User Action**:
-   - The user performs an action (e.g., marking an email as read, flagging it).
+   - The user performs actions on an email (e.g., marking it as read, flagging it).
 
 6. **API Call**:
-   - The system calls the Action API to update the status of the email.
-
-7. **Refresh UI**:
-   - The UI is refreshed to reflect the updated state of the emails.
+   - The system calls the Action API to update the status of the email (e.g., marking as read) and updates the UI accordingly.
 
 ---
 
-## 4. Entity Relationship Diagram (ER Diagram)
+## 4. Entity Relationship Diagram (ERD)
 
 ### Description:
-The **Entity Relationship Diagram (ERD)** for the Mail System defines the structure of the core entities involved and their relationships.
+The Entity Relationship Diagram (ERD) illustrates the relationships between key entities within the Mail System Module. This diagram helps define the structure of email data, its attributes, and how entities relate to each other.
 
 ```mermaid
 erDiagram
-    USERS {
-        string id
-        string email
+    USER {
+        string username
         string password
     }
-    EMAILS {
-        string id
+    EMAIL {
+        int email_id PK
         string subject
         string body
-        string senderId
-        string recipientId
-        datetime receivedAt
-        boolean isRead
-        boolean isStarred
-        boolean isFlagged
+        datetime received_at
+        string sender
+        string recipient
+        boolean is_read
+        boolean is_flagged
     }
-    FOLDERS {
-        string id
-        string name
+    FOLDER {
+        int folder_id PK
+        string folder_name
     }
-    CATEGORIES {
-        string id
-        string name
-        string color
-    }
-    USERS ||--o{ EMAILS: "sends"
-    USERS ||--o{ EMAILS: "receives"
-    EMAILS ||--o{ FOLDERS: "belongs_to"
-    EMAILS ||--o{ CATEGORIES: "has_category"
+    USER ||--o| EMAIL : has
+    FOLDER ||--o| EMAIL : contains
 ```
 
 ### Key Entities:
-- **Users**: Users who interact with the email system.
-- **Emails**: Represents an email message.
-- **Folders**: Represents email folders like Inbox, Sent, Drafts.
-- **Categories**: Represents email categories for filtering purposes.
+- **USER**: Represents the user in the system, storing their credentials and profile information.
+- **EMAIL**: Represents individual emails, including attributes like subject, body, sender, recipient, status (read/unread), and flag status.
+- **FOLDER**: Represents email folders (Inbox, Sent, etc.), containing a list of emails.
 
 ---
 
 ## 5. Entity Definitions
 
-### Users:
-- **id**: Unique identifier for the user.
-- **email**: The user's email address.
-- **password**: User's encrypted password for authentication.
+### USER:
+- **username**: A unique identifier for the user.
+- **password**: The user's password (hashed for security).
 
-### Emails:
-- **id**: Unique identifier for the email.
-- **subject**: Subject of the email.
+### EMAIL:
+- **email_id**: A unique identifier for each email.
+- **subject**: The subject of the email.
 - **body**: The content of the email.
-- **senderId**: Reference to the sender (user).
-- **recipientId**: Reference to the recipient (user).
-- **receivedAt**: Timestamp when the email was received.
-- **isRead**: Boolean flag indicating whether the email has been read.
-- **isStarred**: Boolean flag indicating whether the email is starred.
-- **isFlagged**: Boolean flag indicating whether the email is flagged.
+- **received_at**: The timestamp when the email was received.
+- **sender**: The email address of the sender.
+- **recipient**: The email address of the recipient.
+- **is_read**: Boolean flag indicating if the email is read.
+- **is_flagged**: Boolean flag indicating if the email is flagged.
 
-### Folders:
-- **id**: Unique identifier for the folder.
-- **name**: Name of the folder (e.g., Inbox, Sent, Drafts).
-
-### Categories:
-- **id**: Unique identifier for the category.
-- **name**: Name of the category.
-- **color**: Color associated with the category.
+### FOLDER:
+- **folder_id**: A unique identifier for each folder.
+- **folder_name**: The name of the folder (e.g., Inbox, Sent).
 
 ---
 
 ## 6. Authentication / APIs
 
 ### Authentication:
-The module uses OAuth2 authentication to access the user's email account (e.g., Outlook, Gmail). Upon login, the user's access token is stored for subsequent API calls.
+The Mail System Module supports OAuth 2.0 for user authentication, ensuring secure login and access to email services.
 
-### Key APIs:
-- **EmailService.getFolders()**: Fetches the list of available folders.
-- **EmailService.getMessages()**: Fetches emails from a specific folder.
-- **EmailService.updateMessage()**: Updates the status of an email (e.g., marking as read).
-- **EmailService.moveFolder()**: Moves an email to another folder (e.g., archive, trash).
-- **EmailService.getCategories()**: Fetches available categories for emails.
+### APIs:
+For detailed API documentation, please refer to the following link:
+[API Documentation](#)
 
 ---
 
 ## 7. Testing Guide
 
 ### Unit Testing:
-- **Test Email Service**: Mock external APIs and test that the service correctly handles fetching, updating, and sorting emails.
-- **Test Folder Management**: Ensure that folders are correctly populated and accessible.
-- **Test Sorting and Filtering**: Validate that the sorting and filtering logic works as expected (e.g., by date, importance).
+- **Test Email Retrieval**: Ensure that emails are fetched correctly from the external email service.
+- **Test Filters**: Verify that filtering functionality (read/unread, flagged, etc.) works as expected.
+- **Test Actions**: Ensure that email actions (mark as read/unread, flag, delete) are correctly applied and reflected in the UI.
 
 ### Integration Testing:
-- **Test Email Fetching**: Verify that emails are correctly fetched and displayed in the UI.
-- **Test Actions**: Test the actions like marking as read, flagging, and archiving, ensuring they update both the UI and the backend.
+- **Email Fetching Integration**: Ensure that the system can successfully integrate with the Emails API and fetch email data.
+- **Folder Management Integration**: Verify that the system correctly handles switching between folders and applies folder-specific filters.
+
+### UI Testing:
+- **Email Display**: Ensure that emails are correctly displayed in the UI with options for sorting, filtering, and searching.
+- **Action Verification**: Verify that user actions (e.g., marking emails as read) are reflected in the UI.
 
 ---
-
-## 8. References
-
-- **Fluent UI**: [https://developer.microsoft.com/en-us/fluentui](https://developer.microsoft.com/en-us/fluentui)
-- **Hookstate**: [https://hookstate.js.org/](https://hookstate.js.org/)
-- **Outlook API**: [https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview?view=graph-rest-1.0](https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview?view=graph-rest-1.0)
-
----
-
