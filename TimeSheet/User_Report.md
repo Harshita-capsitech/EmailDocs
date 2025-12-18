@@ -22,12 +22,29 @@ flowchart TD
 ```
 
 ## Process Flow
-The process for fetching and displaying the User Report involves the following steps:
-1. **Frontend Request**: Admin selects a user and specific filters for the report.
-2. **Backend API Call**: The frontend sends the request to the backend API, which queries the database for relevant data.
-3. **Data Aggregation**: The backend aggregates the data, applying filters such as date range, user, and other criteria.
-4. **Report Generation**: The backend processes and sends the aggregated report data back to the frontend.
-5. **UI Rendering**: The frontend processes the data and displays it on the dashboard.
+```mermaid
+---
+config:
+  layout: dagre
+---
+flowchart LR
+    Start["Start"] e1@-.-> Select["Admin selects user & filters"]
+    Select e2@-.- APICall["Frontend calls Backend API"]
+    APICall e3@-.- Aggregate["Backend aggregates & filters data"]
+    Aggregate e4@-.- Report["Backend sends report data"]
+    Report e5@-.- Render["Dashboard displays report"]
+    Render e6@-.-> End["End"]
+
+    Start@{ shape: sm-circ}
+    End@{ shape: dbl-circ}
+
+    e1@{ animate: true, curve: natural, animation: fast } 
+    e2@{ animate: true } 
+    e3@{ animate: true } 
+    e4@{ animate: true } 
+    e5@{ animate: true } 
+    e6@{ animate: true }
+```
 
 ## ER Diagram
 ```mermaid
