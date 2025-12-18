@@ -10,49 +10,73 @@ This feature also allows users to update the scheduled email’s time or associa
 
 ## DFD (Data Flow Diagram)
 ```mermaid
-flowchart TD
-    %% External Entities
-    User[(User)]
-    API[(API)]
-    DB[(Database)]
-
-    %% Process
-    req["Sends request to get scheduled emails"]
-    fetch["Fetches data from DB based on filters"]
-    ret["Returns scheduled emails list"]
-    resp["Sends scheduled emails data to User"]
-
-    User --> req --> API
-    API --> fetch --> DB
-    DB --> ret --> API
-    API --> resp --> User
-
-    style req fill:#e1f5ff
-    style fetch fill:#e1f5ff
-    style ret fill:#e1f5ff
-    style resp fill:#e1f5ff
+flowchart TB
+    User(("User")) e1@--> req["Sends request to get scheduled emails"]
+    req e2@--> API(["API"])
+    API e3@--> fetch["Fetches data from DB based on filters"] & resp["Sends scheduled emails data to User"]
+    fetch e4@--> DB["Database"]
+    DB e5@--> ret["Returns scheduled emails list"]
+    ret e6@--> API
+    resp e8@--> User
+    req@{ shape: rect}
+    fetch@{ shape: rect}
+    resp@{ shape: rect}
+    DB@{ shape: cyl}
+    ret@{ shape: rect}
+     req:::process
+     fetch:::process
+     resp:::process
+     ret:::process
+    classDef process fill:#e1f5ff,stroke:#0882af,stroke-width:2px
+    style User fill:transparent,color:#000000
+    style req color:#FFFFFF,fill:#424242,stroke:#000000
+    style fetch color:#FFFFFF,stroke:#000000,fill:#424242
+    style resp color:#FFFFFF,fill:#424242,stroke:#000000
+    style ret fill:#424242,color:#FFFFFF,stroke:#000000
+    e1@{ animation: fast }
+    e2@{ animation: fast }
+    e3@{ animation: fast }
+    e4@{ animation: fast }
+    e5@{ animation: fast }
+    e6@{ animation: fast }
+    e8@{ animation: fast }
 ```
 ---
 
 ## Process Flow
-1. **User Requests Scheduled Emails**: 
-   - The user makes a request to retrieve a list of scheduled emails, optionally applying filters (e.g., user ID, company ID, etc.).
-   
-2. **API Filters Data**: 
-   - The API applies the specified filters to the database query. Filters may include status (pending, failed), user ID, company ID, contact ID, etc.
-
-3. **Database Query**: 
-   - The database query aggregates the results, counting the total number of records matching the filters.
-
-4. **Data Formatting and Conversion**: 
-   - The retrieved emails are formatted with appropriate fields and timestamps, converting UTC times to practice time based on the user's time zone.
-
-5. **Return Data to User**: 
-   - The API returns the scheduled emails along with metadata (e.g., status, error messages, etc.) to the user.
-
-6. **Email Scheduling Update**:
-   - Users can update the scheduled email time and details via the `SaveSchedule` API. This allows users to reschedule emails or modify other related fields.
-
+```mermaid
+flowchart LR
+    %% Step 1: User Requests
+    user@{ shape: circle, label: "User" }
+    request@{ shape: rect, label: "Request Scheduled Emails\n(Filter: User/Company/Status/...)" }
+    user r1@-->|"Request"| request
+    %% Step 2: API applies filters
+    api@{ shape: rect, label: "API Filters Data\n(with Filters)" }
+    request r2@-->|"To API\nwith filters"| api
+    %% Step 3: DB Query
+    db@{ shape: cyl, label: "Database Query & Aggregate" }
+    api r3@-->|"Query/Count Matching Records"| db
+    %% Step 4: Data Formatting
+    format@{ shape: rect, label: "Format Data\n(Fields/Timestamps\nConvert to Practice Timezone)" }
+    db r4@-->|"Results"| format
+    %% Step 5: Return Data
+    returnData@{ shape: rect, label: "Return Data\n(Scheduled Emails\n+ Metadata)" }
+    format r5@-->|"Formatted Data"| returnData
+    returnData r6@-->|"To User"| user
+    %% Step 6: Email Scheduling Update
+    updateAPI@{ shape: rect, label: "SaveSchedule API\n(Update/Reschedule Email)" }
+    user r7@-->|"Modify/Reschedule"| updateAPI
+    updateAPI r8@-->|"Update DB"| db
+    %% Animation for all edges
+    r1@{ animation: fast }
+    r2@{ animation: fast }
+    r3@{ animation: fast }
+    r4@{ animation: fast }
+    r5@{ animation: fast }
+    r6@{ animation: fast }
+    r7@{ animation: fast }
+    r8@{ animation: fast }
+```
 ---
 
 ## ER Diagram
@@ -80,7 +104,6 @@ erDiagram
     UserScheduleEmail ||--o| EmailSentRequestInvoice : "QuoteDetails"
     UserScheduleEmail ||--o| IdNameModel : "TaskDetails"
 ```
-
 ---
 
 ## Entity Definition
