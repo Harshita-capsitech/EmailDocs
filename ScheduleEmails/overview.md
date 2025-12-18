@@ -12,22 +12,16 @@ The **Email Module** is responsible for handling all email-related operations wi
 ```mermaid
 flowchart TD
     %% External Entities
-    User[(User)]
-    AuthService[Authentication Service]
-    
-    %% Processes
-    CreateEmail p1@-->|"Create Email Content"| SaveDraft
-    SaveDraft p2@-->|"Save Draft Email"| ScheduleEmail
-    ScheduleEmail p3@-->|"Schedule Email Time"| ProcessScheduleEmail
-    ProcessScheduleEmail p4@-->|"Process Scheduled Email"| SendEmail
-    SendEmail p5@-->|"Send Email Data"| Service
-    TrackFailures p6@-->|"Log Failed Emails"| FailureLog
-    CleanDraftEmails p7@-->|"Delete Old Drafts"| Database
-    RetryFailedEmails p8@-->|"Retry Failed Scheduled Emails"| Service
+    User u1@-->|"Create/Send/Edit/View Emails"| Database
+    EmailService es1@-->|"Send Emails"| Database
+    FailureLog fl1@-->|"Log Failed Emails"| Database
 
-    %% Data Stores
-    Database d1@-->|"Store Email and Drafts"| Database
-    FailureLog d2@-->|"Store Failure Details"| FailureLog
+    %% Processes
+    CreateEmail p1@-->|"Email Data"| Database
+    SaveDraft p2@-->|"Draft Email"| Database
+    ScheduleEmail p3@-->|"Scheduled Time"| Database
+    SendEmail p4@-->|"Sent Email Data"| EmailService
+    TrackFailures p5@-->|"Failure Details"| FailureLog
 
     %% Data Flow
     User df1@-->|"Create Email"| CreateEmail
@@ -35,52 +29,36 @@ flowchart TD
     User df3@-->|"Schedule Email"| ScheduleEmail
     User df4@-->|"Send Email"| SendEmail
     User df5@-->|"View Sent/Scheduled Emails"| Database
-    AuthService df6@-->|"Authenticate User"| CreateEmail
-    Service df7@-->|"Send Email to Service"| Service
-    Database df8@-->|"Retrieve Drafts/Emails"| Database
-    FailureLog df9@-->|"Track Failed Emails"| TrackFailures
-    CleanDraftEmails df10@-->|"Clean Old Drafts/Sent Emails"| CleanDraftEmails
-    RetryFailedEmails df11@-->|"Retry Failed Emails"| RetryFailedEmails
+    Database df6@-->|"Send Email to Service"| EmailService
+    Database df9@-->|"Track Failed Emails"| TrackFailures
 
     %% Edge Animations
-    User@{ animation: fast }
-    AuthService@{ animation: fast }
+    u1@{ animation: fast }
+    es1@{ animation: fast }
+    fl1@{ animation: fast }
     p1@{ animation: fast }
     p2@{ animation: fast }
     p3@{ animation: fast }
     p4@{ animation: fast }
     p5@{ animation: fast }
-    p6@{ animation: fast }
-    p7@{ animation: fast }
-    p8@{ animation: fast }
-    d1@{ animation: fast }
-    d2@{ animation: fast }
     df1@{ animation: fast }
     df2@{ animation: fast }
     df3@{ animation: fast }
     df4@{ animation: fast }
     df5@{ animation: fast }
     df6@{ animation: fast }
-    df7@{ animation: fast }
-    df8@{ animation: fast }
     df9@{ animation: fast }
-    df10@{ animation: fast }
-    df11@{ animation: fast }
 
-    %% Optional: make stores/circle/process shapes stand out
+    %% Shapes
     Database@{ shape: cyl }
     FailureLog@{ shape: cyl }
-    Service@{ shape: rect }
+    EmailService@{ shape: rect }
     CreateEmail@{ shape: rect }
     SaveDraft@{ shape: rect }
     ScheduleEmail@{ shape: rect }
-    ProcessScheduleEmail@{ shape: rect }
     SendEmail@{ shape: rect }
     TrackFailures@{ shape: rect }
-    CleanDraftEmails@{ shape: rect }
-    RetryFailedEmails@{ shape: rect }
     User@{ shape: circle }
-    AuthService@{ shape: circle }
 
 ```
 ---
