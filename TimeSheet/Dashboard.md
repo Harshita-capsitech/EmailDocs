@@ -426,32 +426,17 @@ This section outlines the API routes and authentication used in the Timesheet Da
 - `TeamReport` allows `[Authorize(Roles = "ADMIN,MANAGER")]`.
 .
 
-## 2. **API Routes**
-#### **GetDashboardUserStats**
+# API Endpoints Documentation
 
-[GET /UserStats](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)
+## **API Endpoints:**
 
-#### **OverviewReport**
+| **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
+|------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
+| **Get Dashboard User Stats**       | GET                           | [/UserStats](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Overview Report**            | GET                           | [/OverviewReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Phone Calls Overview**       | GET                           | [/Communication](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Quotes and Sales Report**    | GET                           | [/QuotesSales](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
-[GET /OverviewReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)
-
-#### **GetPhoneCalls**
-
-[GET /Communication](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)
-
-#### **GetQuotesAndSalesReport**
-
-[GET /QuotesSales](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)
-
-
-| Endpoint Route        | HTTP Method | Description                                     |
-|-----------------------|-------------|-------------------------------------------------|
-| `/UserStats`          | `GET`       | Fetch user statistics (e.g., total time worked) |
-| `/Communication`      | `GET`       | Fetch communication overview (calls data)      |
-| `/OverviewReport`     | `GET`       | Fetch timesheet overview report                |
-| `/QuotesSales`        | `GET`       | Fetch quotes and sales report                  |
-
-These endpoints are used to gather and display data for the Timesheet Dashboard. All of them support query parameters for filtering and sorting the data.
 
 ---
 
@@ -549,6 +534,7 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
 ### Notes
 - The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
 - Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+
 
 
 
