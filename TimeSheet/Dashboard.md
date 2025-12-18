@@ -1,16 +1,29 @@
-#  Timesheet Dashboard API & Frontend Module Documentation
 
-##  Overview
+# Timesheet Dashboard API & Frontend Module Documentation
 
-The **Timesheet Dashboard** is an Admin/Manager reporting experience that aggregates **user activity time**, **communications**, **leads**, **website queries**, and **quotes/sales** into a single dashboard UI.
+## Overview
 
-It consists of:
-- **Backend reporting endpoints** (MongoDB aggregations) that compute overview KPIs and breakdowns.
-- **Frontend dashboard components** that render cards, charts, and the “Top 10 / Bottom 10” user stats table.
+The **Timesheet Dashboard** is an Admin/Manager reporting tool that aggregates **user activity time**, **communications**, **leads**, **website queries**, and **quotes/sales** into a single dashboard UI.
 
-On the UI, the dashboard container (`NewAdminTimeSheet`) drives the overall date/team filters and refresh behavior, then calls the reporting APIs and passes data to the child cards and tables. 
+This dashboard serves as a comprehensive reporting solution, displaying real-time data visualizations and detailed reports, allowing administrators and managers to view various key performance indicators (KPIs). The frontend and backend work together to provide seamless access to the data.
 
----
+### Key Features:
+- **Backend reporting endpoints** (MongoDB aggregations) compute overview KPIs and breakdowns.
+- **Frontend dashboard components** render cards, charts, and tables such as the "Top 10 / Bottom 10" user stats.
+- **UI-driven filters** for date ranges, teams, and other criteria.
+
+### Main Components:
+1. **Backend Services**:
+   - **ReportService**: Handles the fetching and aggregation of data such as timesheets, communications, and sales.
+   - **PhoneCallService**: Manages the fetching of communication data, including calls and reviews.
+   - **TimesheetService**: Handles the querying and filtering of timesheet data.
+   - **Sales/Quotes Service**: Aggregates sales and quotes data, including receipts and pending amounts.
+
+2. **Frontend Components**:
+   - **NewAdminTimeSheet**: Main container for the dashboard, managing data requests and passing them to child components.
+   - **Cards**: Displays key metrics like leads, calls, emails, and website queries.
+   - **Charts**: Visualizations for sales and communications.
+   - **User Stats**: Tables showing the top and bottom user performers based on time worked, calls made, etc.
 
 ## DFD
 
@@ -322,5 +335,6 @@ curl -s "$BASE_URL/UserStats?fromDate=01/12/2025&toDate=31/12/2025&teamId=&sortD
 ### Notes
 - The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
 - Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+
 
 
