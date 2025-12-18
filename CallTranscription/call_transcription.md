@@ -11,15 +11,42 @@ This module integrates both frontend and backend components, leveraging **Twilio
 ## **DFD (Data Flow Diagram)**
 
 ```mermaid
-graph LR
-    A[User] --> B[AIInsights Component]
-    B --> C[API: /PhoneCalls/{id}/Transcription]
-    C --> D[Backend]
-    D --> E[Azure Blob Storage (MP3 files)]
-    D --> F[Transcription Service]
-    F --> G[AI Insights (Tone Analysis, Sentiment)]
-    G --> H[Frontend UI]
-    H --> A
+flowchart LR
+    %% User entry point
+    user(("User"))
+    ui(["Frontend UI"])
+    aiinsights(["AIInsights Component"])
+    api["API: /PhoneCalls/{id}/Transcription"]
+
+    subgraph Backend
+        direction TB
+        be(["Backend"])
+        blob[("Azure Blob Storage<br/>(MP3 files)")]
+        transcription[["Transcription Service"]]
+        insights[["AI Insights<br/>(Tone, Sentiment)"]]
+    end
+
+    user --> aiinsights
+    aiinsights --> api
+    api --> be
+    be --> blob
+    be --> transcription
+    transcription --> insights
+    insights --> ui
+    ui -- "Delivers Insights" --> user
+
+    %% Styling
+    style user fill:#d6eaff,stroke:#3867d6,stroke-width:2px
+    style ui fill:#cae7ff,stroke:#3867d6,stroke-width:2px
+    style aiinsights fill:#b8e994,stroke:#38ada9,stroke-width:2px
+    style api fill:#edf285,stroke:#b3a123,stroke-width:2px
+    style be fill:#fff1e6,stroke:#833471,stroke-width:2px
+    style blob fill:#f9e4b7,stroke:#3d3d3d,stroke-width:2px
+    style transcription fill:#f8a5c2,stroke:#b33771,stroke-width:2px
+    style insights fill:#f3a683,stroke:#b71540,stroke-width:2px
+
+    %% Backend Group Styling
+    style Backend stroke:#222f3e,stroke-width:2px
 ```
 
 ### Explanation:
