@@ -57,8 +57,9 @@ config:
     curve: monotoneY
   theme: neutral
   look: classic
+  layout: dagre
 ---
-flowchart LR
+flowchart TB
     A["Start"] e1@==> step1(["Admin/Manager 
 Accesses Dashboard"])
     step1 e2@==> step2["Dashboard 
@@ -77,11 +78,12 @@ Team/Member Report"]
     step4@{ shape: rect}
     step5@{ shape: curv-trap}
     B@{ shape: dbl-circ}
-    style step1 fill:#FFFFFF,stroke:#424242
-    style step2 fill:#FFFFFF
-    style step3 fill:#FFFFFF,stroke:#757575,stroke-width:2px
-    style step4 fill:#FFFFFF
-    style step5 fill:#FFFFFF,stroke:#757575,stroke-width:2px
+    style step1 fill:#FFFFFF,stroke:#000000
+    style step2 fill:#FFFFFF,stroke:#000000
+    style step3 fill:#FFFFFF,stroke:#000000,stroke-width:2px
+    style step4 fill:#FFFFFF,stroke:#000000
+    style step5 fill:#FFFFFF,stroke:#000000,stroke-width:2px
+    style B stroke:#000000
 
     e1@{ animate: true } 
     e2@{ animate: true } 
