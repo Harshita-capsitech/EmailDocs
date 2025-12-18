@@ -1,7 +1,10 @@
 
 # Timesheet Dashboard Overview
 
-The **Timesheet Dashboard** provides an administrative interface for monitoring and analyzing employee activities, communications, sales, and other key metrics. It consolidates various reports, offers comprehensive insights, and displays statistics in an easy-to-read format, making it an essential tool for managers and admins. 
+The **Timesheet Dashboard** is an essential tool for administrative management, providing a centralized interface for monitoring and analyzing key employee performance metrics, including activity hours, communications, and sales. It aggregates various reports in a visually appealing and easy-to-understand format, giving managers and admins the ability to track overall productivity, employee engagement, and organizational performance in real-time. The dashboard consolidates data from multiple sources, offering insights into leads, call activity, email statistics, website queries, sales, and quotes. This tool is designed to help organizations streamline operations, optimize workforce performance, and make data-driven decisions for future growth.
+
+With features like customizable date ranges and team-specific filters, the Timesheet Dashboard offers flexibility in analyzing data at both the individual and team levels. It allows users to view aggregate statistics on key business metrics such as the number of leads, call volumes, emails, and website interactions, as well as providing more detailed insights through various reports and user activity tables. Whether it's tracking time worked, monitoring sales progress, or reviewing communication activity, the dashboard ensures that managers have a comprehensive view of their team's performance and the overall operational efficiency of the organization.
+
 
 ## Components
 
@@ -12,40 +15,10 @@ The dashboard is divided into the following primary components:
 3. **Email Report**: Shows the total number of emails, including inbox, sent, and draft emails.
 4. **Website Queries Report**: Tracks website queries, including callback requests, contact queries, and service requests.
 
-## Sections
 
-The dashboard is organized into various sections for optimal user experience:
+# Data Flow Diagram (DFD)
 
-### 1. **Top-Level Overview**
-This section includes summary cards for quick insights into leads, calls, emails, and website queries. Each card provides an aggregate count along with detailed breakdowns (e.g., leads converted, lead lost, incoming/outgoing calls, etc.).
-
-### 2. **Detailed Reports**
-This section allows users to filter data by dates and teams. The available filters allow users to choose different time periods, such as "This Month," "Last Month," "This Year," and even custom date ranges. It also includes a dropdown to select the team, allowing users to narrow the data to specific teams within the organization.
-
-#### Filters:
-- **Team Filter**: Allows selecting the team to view specific reports.
-- **Date Range Picker**: Users can select a custom date range or use predefined ranges (e.g., "This Month," "Last Week").
-
-### 3. **User Report Table**
-This table displays a list of top and bottom users based on their activity. It includes columns for:
-- **User Name**: The name of the employee.
-- **Team**: The team the user belongs to.
-- **Total Hours Worked**: The total amount of time worked by the user within the selected date range.
-- **Average Hours**: Whether the user worked above average time during the selected period.
-
-### 4. **Sales and Quotes Report**
-This section displays sales and quotes data:
-- **Sales**: Displays the total sales, total receipts, and pending sales.
-- **Quotes**: Displays the number of accepted, pending, and raised quotes, along with the total value of these quotes.
-
-### 5. **Communication Overview**
-This section provides insights into communication activity within the organization, tracking incoming and outgoing calls. It also includes a breakdown of calls by day, week, month, or year, depending on the user's selected period.
-
-
-
-## DFD
-
-### Level 0 Data Flow Diagram
+This diagram illustrates the flow of data between different components of the Timesheet Dashboard, starting from the User interaction to the final Response returned to the Frontend.
 
 ```mermaid
 flowchart TD
@@ -101,9 +74,45 @@ flowchart TD
     e14@{ animate: true }
 ```
 
----
+# Process Flow Explanation
 
-## Process Flow
+The process flow describes the steps involved in a system that handles user authentication, data retrieval, and presentation through a browser interface. Here’s the breakdown:
+
+1. **User Authentication**:
+   - The **User** initiates the process by logging in.
+   - After authentication, the **Authentication Auth Service** verifies the credentials.
+   - Once authenticated, the user accesses the **Admin/Manager UI**, where they can manage and view various reports.
+
+2. **Frontend Interaction**:
+   - The **Frontend (Browser UI)** enables the admin/manager to interact with the system. From here, multiple report cards are accessible:
+     - **Timesheet Report Card**: Displays timesheet data.
+     - **Sales and Quotes Report Card**: Displays sales and quote data.
+     - **Communication Overview**: Provides details on communication activity.
+     - **User Stats Table**: Displays user-specific statistics.
+
+3. **API Calls**:
+   - Each report card makes an **API Call** to fetch relevant data:
+     - The **Timesheet Report Card** calls the **/OverviewReport API**.
+     - The **User Stats Table** calls the **/UserStats API**.
+     - The **Sales and Quotes Report Card** makes a call to **/SalesAndQuotes API**.
+     - The **Communication Overview** calls **/Communication API**.
+
+4. **Backend API Controller**:
+   - These API calls are processed by the **Backend API Controller**, which aggregates data from various backend services.
+   - The **Backend** interacts with several **Databases**, such as **MongoDB**, which contains collections like **ApplicationUserDB**, **PhoneCallDB**, **BusinessInvoiceDB**, and **BusinessQuoteDB**.
+
+5. **Data Retrieval**:
+   - From the databases, the system fetches data such as:
+     - **User Data** from **ApplicationUserDB**.
+     - **Communication Data** from **PhoneCallDB**.
+     - **Sales Data** from **BusinessInvoiceDB**.
+     - **Quote Data** from **BusinessQuoteDB**.
+
+6. **Data Presentation**:
+   - The frontend displays this data in a structured manner, allowing the admin/manager to view aggregated insights, such as total sales, communication stats, or timesheet reports.
+
+
+# Process Flow Diagram
 
 ```mermaid
 flowchart TB
@@ -246,8 +255,6 @@ erDiagram
     UserStat ||--|| User : "Stat for user"
 ```
 
----
-
 
 ## Entity Definitions for Timesheet Dashboard System
 
@@ -320,13 +327,11 @@ erDiagram
 
 This section outlines the API routes and authentication used in the Timesheet Dashboard.
 
-## 1. **Authentication**
+## **Authentication**
 - Most endpoints infer **PracticeId** from the authenticated user context (`User.GetPracticeId()`).
 - `UserReport` is explicitly protected: `[Authorize(Roles = "ADMIN")]`.
 - `TeamReport` allows `[Authorize(Roles = "ADMIN,MANAGER")]`.
-.
 
-# API Endpoints Documentation
 
 ## **API Endpoints:**
 
@@ -337,8 +342,6 @@ This section outlines the API routes and authentication used in the Timesheet Da
 | **Get Phone Calls Overview**       | GET                           | [/Communication](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 | **Get Quotes and Sales Report**    | GET                           | [/QuotesSales](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
-
----
 
 This concludes the **Authentication/API Endpoints** documentation for the Timesheet Dashboard. All API routes are protected and require valid authentication for access.
 
@@ -434,6 +437,7 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
 ### Notes
 - The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
 - Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+
 
 
 
