@@ -1,244 +1,218 @@
-# FileUploadDropInput – Drag & Drop Upload Component
+# **FileUploadDropZone - Technical Documentation**
 
 ## 1. Overview
 
-The **FileUploadDropInput** component is a reusable, controlled React component designed to handle **file selection, drag-and-drop uploads, and upload progress visualization** in a provider-agnostic way.
+### **High-Level Purpose of the Module**
 
-### Purpose
-- Provide a consistent UX for file uploads
-- Delegate upload logic to the parent (API, Graph, S3, Blob, etc.)
-- Track per-file upload progress and status
+The **FileUploadDropZone** component provides a user-friendly interface for uploading files. This module simplifies the process of adding files to a system by allowing users to drag files directly from their file explorer into a designated drop zone, or alternatively, to select files through a file input. The module is designed to handle multiple files at once, offering a smooth user experience for uploading, monitoring upload progress, and managing uploaded files.
 
-### Problems It Solves
-- Avoids coupling UI with upload implementation
-- Supports retry, view, and delete actions
-- Handles drag/drop edge cases and accessibility
+### **What Problems It Solves**
 
-### Key Responsibilities
-- File selection (click & drag/drop)
-- File size validation
-- Progress visualization
-- Upload lifecycle UI state
+- **Simplifies file uploads**: It reduces the need for complex file selection dialogs, offering a more intuitive drag-and-drop experience.
+- **Improves file management**: Users can easily manage files, view upload progress, cancel uploads, and retry failed uploads.
+- **Validates file types and sizes**: Automatically validates file types and ensures that files meet size constraints before upload, providing real-time feedback to the user.
+- **Handles failed uploads and retries**: Allows users to retry failed uploads and cancel ongoing ones, ensuring a smooth upload experience.
+
+### **Key Responsibilities**
+
+- **File Dragging and Dropping**: Allows users to drag files directly from their file explorer to the drop zone for upload.
+- **File Validation**: Validates file types and file sizes to ensure they meet the system's requirements.
+- **Progress Tracking**: Provides real-time upload progress indicators, allowing users to track the status of their files.
+- **Retry and Cancel Mechanism**: Offers the ability to retry failed uploads or cancel ongoing uploads.
+- **State Management**: Manages the state of files during upload, including those that are pending, successfully uploaded, or failed.
+- **Customizable UI**: Customizes the look and feel of the upload zone based on the current state (e.g., active drag zone, upload progress, success, failure).
 
 ---
 
-## 2. Unified Entry Point
+## 2. Data Flow Diagram (DFD)
 
-### Component
-```tsx
-<FileUploadDropInput />
+```mermaid
+flowchart TD
+    A([👤 User]) edge1@--> B[📂 Drag Files or Click to Select]
+    B edge2@--> C{✔️ Validate File Type & Size}
+    C edge3@-->|Valid| D[📋 Add to Upload Queue]
+    C edge12@-->|Invalid| M[⚠️ Show Error]
+    D edge4@--> E[📊 Track Upload Progress]
+    E edge5@--> F[⬆️ File Uploading]
+    F edge6@--> G{📌 Upload Result}
+    G edge7@-->|Success| J[✅ View/Download Files]
+    G edge8@-->|Failure| H[🔄 Retry or Cancel]
+    H edge9@-->|Retry| F
+    H edge10@-->|Cancel| I[🗑️ Mark for Deletion]
+    I edge11@--> K[❌ Remove from Queue]
+    K edge13@--> J
+    
+    edge1@{ animate: fast }
+    edge2@{ animate: fast }
+    edge3@{ animate: fast }
+    edge4@{ animate: fast }
+    edge5@{ animate: fast }
+    edge6@{ animate: fast }
+    edge7@{ animate: fast }
+    edge8@{ animate: fast }
+    edge9@{ animate: fast }
+    edge10@{ animate: fast }
+    edge11@{ animate: fast }
+    edge12@{ animate: fast }
+    edge13@{ animate: fast }
+    
+    style A fill:#e3f2fd,stroke:#1976d2,stroke-width:4px,color:#000
+    style B fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
+    style C fill:#fff9c4,stroke:#f57f17,stroke-width:3px,color:#000
+    style D fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
+    style E fill:#e0f2f1,stroke:#00897b,stroke-width:3px,color:#000
+    style F fill:#e1f5fe,stroke:#0277bd,stroke-width:3px,color:#000
+    style G fill:#fff9c4,stroke:#f9a825,stroke-width:3px,color:#000
+    style H fill:#ffe0b2,stroke:#ef6c00,stroke-width:3px,color:#000
+    style I fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#000
+    style J fill:#c8e6c9,stroke:#2e7d32,stroke-width:4px,color:#000
+    style K fill:#ffcdd2,stroke:#d32f2f,stroke-width:3px,color:#000
+    style M fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#000
 ```
 
-### Why a Single Entry Point
-- Centralizes all file interaction logic
-- Keeps upload behavior predictable
-- Simplifies integration with different backends
+---
 
-### Supported Operations
-- Add files
-- Track upload progress
-- Retry failed uploads
-- View uploaded files
-- Delete files
+## 3. Process Flow
+
+The process flow for the **FileUploadDropZone** component is as follows:
+
+1. **User Drags or Selects Files**:
+   - The user either drags files into the drop zone or selects them using the file input.
+
+2. **Validate File Type and Size**:
+   - The component checks the file types and sizes to ensure they meet the system's requirements (e.g., file type and max file size).
+
+3. **Add Files to Upload Queue**:
+   - Valid files are added to the upload queue, and a unique identifier (UID) is assigned to each file.
+
+4. **Track Upload Progress**:
+   - Each file's upload progress is tracked in real-time, with a progress bar being displayed for each file.
+
+5. **File Uploading**:
+   - The upload is initiated, and the progress is continuously updated.
+
+6. **Upload Success or Failure**:
+   - Once the file upload completes, the status is updated as "Success" or "Failed."
+
+7. **Retry or Cancel Upload**:
+   - The user can retry a failed upload or cancel an ongoing one.
+
+8. **Mark Files for Deletion**:
+   - Files can be marked for deletion if the user opts to remove them from the upload queue.
+
+9. **View/Download Files**:
+   - Once uploaded, files can be viewed or downloaded by the user.
 
 ---
 
-## 3. Input Models
+## 4. Entity Relationship (ER) Diagram
 
-### FileUploadDropZoneProps
+The **FileUploadDropZone** component operates on entities related to the file upload process, including files, their states, and actions. Below is the basic ER diagram:
 
-| Property | Type | Purpose |
-|-------|------|-------|
-| value | File[] | Controlled list of files |
-| maxFileSize | number | Max file size (bytes, default 30MB) |
-| accept | string \| string[] | File type filter |
-| disabled | boolean | Disable interactions |
-| multiple | boolean | Allow multiple file selection |
-| placeholder | string | Empty state text |
-| children | ReactNode | Custom UI override |
-| onDragStateChange | (boolean) => void | Drag state callback |
-| onFilesDrop | (File, updateProgress) => void | Upload handler |
-| onDelete | (File) => void | Delete callback |
-| onView | (File) => void | View callback |
+```mermaid
+erDiagram
+    FILE {
+        string uid
+        string name
+        int size
+        string type
+        string status
+        string progress
+    }
 
----
+    UPLOAD_ACTION {
+        string actionType
+        string timestamp
+    }
 
-## 4. Core Concepts & Normalization Logic
+    USER {
+        string userId
+        string username
+    }
 
-### File Key Normalization
-Each file is uniquely identified using:
-```ts
-name-size-lastModified
+    FILE ||--o{ UPLOAD_ACTION : performs
+    USER ||--o{ FILE : owns
 ```
 
-This prevents collisions and ensures stable progress tracking.
+---
 
-### Accept Normalization
-```ts
-string | string[] → comma-separated string
-```
+## 5. Entity Definitions
 
-### File Size Validation
-- Files exceeding `maxFileSize` are immediately marked as **Failed**
-- Upload callback is not triggered for invalid files
+### **File**
+
+- **uid** (string): A unique identifier for the file, generated using the `nextUid()` method.
+- **name** (string): The name of the file (e.g., `document.pdf`).
+- **size** (int): The size of the file in bytes.
+- **type** (string): The MIME type of the file (e.g., `application/pdf`).
+- **status** (string): The current status of the file (e.g., `Uploading`, `Success`, `Failed`).
+- **progress** (string): The current progress of the file upload (e.g., `75%`).
+
+### **Upload Action**
+
+- **actionType** (string): Describes the action being performed (e.g., `upload`, `delete`, `retry`).
+- **timestamp** (string): The timestamp when the action occurred.
+
+### **User**
+
+- **userId** (string): The unique identifier for the user.
+- **username** (string): The username of the user who initiated the upload.
 
 ---
 
-## 5. Base Object Construction
+## 6. Authentication / APIs
 
-### FileProgress Model
+The **FileUploadDropZone** module does not handle direct authentication. Authentication for file uploads would be handled by the backend API, which should ensure that users are authorized to upload files. Here's an example API for handling file uploads:
 
-```ts
+### **API Example: File Upload**
+
+**POST /api/upload**
+
+- **Request Body**: Multipart form-data containing the file to be uploaded.
+- **Response**: JSON response indicating success or failure of the upload.
+
+```json
 {
-  key: string;
-  value: number; // 0–100
-  status: Pending | Uploading | Success | Failed
+  "status": "success",
+  "message": "File uploaded successfully.",
+  "fileId": "file_12345"
 }
 ```
 
-### Why It Exists
-- Decouples upload mechanics from UI
-- Enables granular progress updates
-- Prevents unnecessary re-renders
+### **API Example: Delete File**
 
----
+**DELETE /api/delete/{fileId}**
 
-## 6. Internal Helpers / Services
+- **Request**: `fileId` parameter in the URL.
+- **Response**: JSON response indicating success or failure of the file deletion.
 
-### updateFileProgress
-- Stable callback passed to parent
-- Allows parent to push upload state updates
-
-### formatBytes
-- Human-readable file size formatting
-
-### Drag Handlers
-- `handleDragEnter`
-- `handleDragOver`
-- `handleDragLeave`
-- `handleDrop`
-
-These ensure accurate drag-state tracking without flicker.
-
----
-
-## 7. Execution Flow by Action Type
-
-### Upload Flow
-
-**Trigger:** File dropped or selected
-
-**Steps:**
-1. Validate file size
-2. Generate file key
-3. Invoke `onFilesDrop(file, updateProgress)`
-4. Parent uploads file
-5. Parent reports progress & status
-
-### Retry Flow
-
-**Trigger:** Retry icon click
-
-**Steps:**
-1. Reinvoke `onFilesDrop`
-2. Reset progress
-
-### Delete Flow
-
-**Trigger:** Delete icon click
-
-**Steps:**
-1. Call `onDelete(file)`
-2. Parent removes file from `value`
-
----
-
-## 8. Attachment / Asset Handling
-
-### Upload Strategy
-- Component does **not** upload files itself
-- Parent controls:
-  - Chunking
-  - Multipart uploads
-  - Cloud providers
-
-### Sync Strategy
-- Controlled `value` prop ensures UI reflects backend state
-
-### Retrieval Strategy
-- `onView` allows opening previews or downloads
-
----
-
-## 9. Error Handling Strategy
-
-### UI-Level Errors
-- Oversized files → `Failed`
-- Upload failures → Retry enabled
-
-### Why This Strategy
-- Keeps UI responsive
-- Avoids blocking other uploads
-
----
-
-## 10. Design Principles
-
-- Controlled component pattern
-- Provider-agnostic uploads
-- Minimal internal state
-- Accessibility-first (keyboard + ARIA)
-
-### Scalability Considerations
-- Handles large file lists
-- O(1) progress lookup via Map
-
----
-
-## 11. Mermaid Diagrams
-
-### Overall Flowchart
-```mermaid
-flowchart TD
-UI[User Action] --> Select[Select / Drop File]
-Select --> Validate[Validate Size]
-Validate -->|Valid| Upload[onFilesDrop]
-Validate -->|Invalid| Fail[Mark Failed]
-Upload --> Progress[Update Progress]
-Progress --> Complete[Success / Failed]
-```
-
-### Sequence Diagram
-```mermaid
-sequenceDiagram
-User->>UI: Drop File
-UI->>Parent: onFilesDrop(file)
-Parent->>API: Upload
-API-->>Parent: Progress
-Parent-->>UI: updateFileProgress
-```
-
-### Retry Flow
-```mermaid
-flowchart LR
-Failed --> Retry
-Retry --> Upload
+```json
+{
+  "status": "success",
+  "message": "File deleted successfully."
+}
 ```
 
 ---
 
-## 12. Final Outcome
+## 7. Testing Guide
 
-### What This Design Achieves
-- Clean separation of concerns
-- Reusable across products and providers
-- Predictable upload lifecycle
+To ensure the functionality of the **FileUploadDropZone** component, the following testing strategies should be employed:
 
-### Benefits
-- **UI:** Smooth UX with feedback
-- **API:** Full control over uploads
-- **Scalability:** Supports large and concurrent uploads
+### **Unit Tests:**
 
----
+- Test each utility function (e.g., `isImage`, `getFileIconName`).
+- Validate file size and type checks.
 
-**Status:** Production-ready
+### **Component Tests:**
+
+- Test the drag-and-drop functionality by simulating drag events and file drops.
+- Test upload progress tracking by simulating file uploads and monitoring the progress.
+- Test retry and cancel functionalities.
+
+### **Integration Tests:**
+
+- Test the file upload process with backend APIs to ensure correct integration between the frontend and backend.
+
+### **End-to-End Tests:**
+
+- Perform manual or automated tests for file uploads, handling errors, and retry mechanisms to ensure a smooth user experience.
