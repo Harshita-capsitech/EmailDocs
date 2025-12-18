@@ -283,14 +283,4 @@ erDiagram
 
 ---
 
-## **Version and Change Log**
-
-| Version | Date       | Changes                                                                                                                                          |
-|---------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0     | 2025-12-18 | Initial version of the **Email Module** documentation created.                                                                                  |
-| 1.1     | 2025-12-20 | Added API details and testing guidelines for email service interactions.                                                                         |
-
----
-
-This documentation serves as a comprehensive guide for the **Email Module**, outlining its functionality, integration points, and best practices for use and testing.
 
