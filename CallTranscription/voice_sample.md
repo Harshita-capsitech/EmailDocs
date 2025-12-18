@@ -1,21 +1,21 @@
-# Voice Recording & Verification Module
+
+# Voice Recording Module
 
 ---
 
 ## 1. Overview
 
-The Voice Recording & Verification module provides a secure mechanism for verifying a user’s identity using voice biometrics.
-It is integrated into the Profile section and is designed with clear separation of concerns between UI, AI verification, and backend persistence.
+The Voice Recording module provides a secure mechanism for collecting a user’s voice sample. It is integrated into the Profile section and ensures clear separation of concerns between the UI, voice sample collection, and backend persistence.
 
 ### Goals
-- Enable voice-based identity verification
+- Collect voice samples for further verification or processing
 - Prevent storage of raw biometric data in core systems
-- Provide clear auditability of verification status
-- Ensure extensibility for future biometric workflows
+- Provide clear auditability of sample collection status
+- Ensure extensibility for future workflows involving voice data
 
 ### Non-Goals
+- Voice authentication or verification at login time
 - Long-term storage of voice samples
-- Voice authentication at login time
 - Multi-factor biometric comparison
 
 ---
@@ -28,8 +28,8 @@ The module is composed of three logical layers:
 - VoiceRecordingModal
 - Profile UI
 
-### Verification Layer
-- AI audio verification service (/sample)
+### Collection Layer
+- Audio capture service (/sample)
 
 ### Persistence Layer
 - AuthController.UploadAudio
@@ -53,7 +53,7 @@ flowchart LR
     subgraph Backend [Backend Services]
         direction TB
         PS@{ shape: rect, label: "`Profile Service`" }
-        AI@{ shape: rect, label: "`AI Voice Verification`" }
+        AI@{ shape: rect, label: "`Audio Collection`" }
         AC@{ shape: rect, label: "`Auth Controller`" }
     end
 
@@ -64,7 +64,7 @@ flowchart LR
     U e1@-->|"Voice Input"| B
     B e2@-->|"Raw Stream"| VR
     VR e3@-->|"WAV Data"| PS
-    PS e4@-->|"Verification Call"| AI
+    PS e4@-->|"Collection Call"| AI
     AI e5@-->|"Result"| PS
     PS e6@-->|"Status Flag"| AC
     AC e7@-->|"Persist"| DB
@@ -114,9 +114,9 @@ sequenceDiagram
     Voice-->>-User: Recording Ready
     deactivate Voice
 
-    Voice->>+AI: Verify Audio
+    Voice->>+AI: Process Audio Sample
     activate AI
-    AI-->>-Voice: Verified / Not Verified
+    AI-->>-Voice: Sample Collected
     deactivate AI
 
     Voice-->>User: Show Result ✅
@@ -138,9 +138,9 @@ erDiagram
     }
 
     VOICESTATUS {
-        bool Recorded "Has Voice Recording"
+        bool Recorded "Has Voice Sample"
         datetime On "Date Recorded"
-        string UserId FK "Foreign Key to USER"
+        string TaskId FK "Foreign Key to USER"
     }
 
     %% Highlight VOICESTATUS to simulate 'active' state/focus with black color
@@ -148,8 +148,6 @@ erDiagram
     class VOICESTATUS active
 
     %% Optionally, style keys for greater clarity
-
-
 ```
 
 ---
@@ -158,11 +156,11 @@ erDiagram
 
 ### ApplicationUserVoiceStatus
 
-Represents the verification state of a user’s voice identity.
+Represents the collection state of a user’s voice sample.
 
 Fields:
-- Recorded: Indicates whether verification succeeded
-- On: Timestamp of last successful verification
+- Recorded: Indicates whether a voice sample was successfully collected
+- On: Timestamp of the last collected sample
 
 This structure is intentionally minimal to reduce biometric footprint.
 
@@ -176,13 +174,13 @@ checkAudio
 - Endpoint: /sample
 - Method: POST
 - Payload: multipart/form-data
-- Responsibility: AI-based voice verification
+- Responsibility: AI-based audio sample processing
 
 uploadAudio
 - Endpoint: /Auth/UploadAudio
 - Method: POST
 - Payload: boolean
-- Responsibility: Persist verification result
+- Responsibility: Persist voice sample collection result
 
 ---
 
@@ -202,7 +200,7 @@ No raw audio is stored or processed at this layer.
 ## 8. Security Considerations
 
 - Raw audio never reaches AuthController
-- AI service is isolated and accessed via OIDC
+- Audio collection service is isolated and accessed via OIDC
 - Voice status is boolean, not biometric data
 - MongoDB stores metadata only
 - Browser permissions strictly enforced
@@ -252,9 +250,9 @@ Query ApplicationUser.Voice fields directly in MongoDB.
 
 ## 12. Future Enhancements
 
-- Voice confidence score storage
+- Audio sample quality verification
 - Multiple language sample support
-- Expiry-based re-verification
+- Expiry-based re-sample
 - Admin audit view
 
 ---
@@ -271,19 +269,9 @@ Query ApplicationUser.Voice fields directly in MongoDB.
 ## 14. Version and Change Log
 
 v1.0.0
-- Initial voice verification
-- AI integration
+- Initial voice sample collection
+- Audio processing integration
 - MongoDB persistence
-
-v1.1.0
-- WAV conversion
-- Auto-stop recording
-- Improved error handling
-
-v1.2.0
-- UI sync improvements
-- Re-record flow
-- Background user refresh
 
 ---
 
