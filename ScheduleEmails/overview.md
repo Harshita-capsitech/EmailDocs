@@ -76,72 +76,71 @@ flowchart TD
 
 ## **Process Flow**
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "background": "#181818",
-    "primaryColor": "#222",
-    "primaryTextColor": "#EEEEEE",
-    "nodeBorder": "#888",
-    "fontSize": "16px"
-  }
-}}%%
-flowchart TD
-    start@{ shape: circle, label: "Start" }
-    CE@{ shape: rect, label: "Compose Email" }
-    VAL@{ shape: rect, label: "System Validates Email" }
-    SEND@{ shape: diamond, label: "Send Now?" }
-    ERR@{ shape: rect, label: "Show Errors" }
-    DR@{ shape: rect, label: "Save as Draft" }
-    EDIT@{ shape: rect, label: "Edit Draft" }
-    SCH@{ shape: rect, label: "Schedule Email" }
-    DB@{ shape: cyl, label: "Store Scheduled Email" }
-    SEND2@{ shape: rect, label: "Send Email" }
-    SMTP@{ shape: rect, label: "Email Service" }
-    STATUS@{ shape: rect, label: "Track Status" }
-    LIST@{ shape: rect, label: "List (Sent, Scheduled, Failed, Drafts)" }
-    FILTER@{ shape: rect, label: "Filter Emails" }
-    LOG@{ shape: rect, label: "Log Failure & Retry" }
-    END@{ shape: dbl-circ, label: "End" }
-    start s1@--> CE
-    CE s2@--> VAL
-    VAL s3@-->|Valid| SEND
-    VAL s4@-->|Invalid| ERR
-    ERR s5@--> CE
-    SEND s6@-->|No, Save as Draft| DR
-    DR s7@--> EDIT
-    EDIT s8@--> CE
-    SEND s9@-->|No, Schedule| SCH
-    SCH s10@--> DB
-    SEND s11@-->|Yes| SEND2
-    SEND2 s12@--> SMTP
-    SMTP s13@--> STATUS
-    STATUS s14@--> LIST
-    LIST s15@--> FILTER
-    FILTER s16@-.-> EDIT
-    STATUS s17@-->|Failed| LOG
-    LOG s18@--> STATUS
-    LIST s19@--> END
-    %% Animated Edges
-    s1@{ animation: fast }
-    s2@{ animation: fast }
-    s3@{ animation: fast }
-    s4@{ animation: fast }
-    s5@{ animation: fast }
-    s6@{ animation: fast }
-    s7@{ animation: fast }
-    s8@{ animation: fast }
-    s9@{ animation: fast }
-    s10@{ animation: fast }
-    s11@{ animation: fast }
-    s12@{ animation: fast }
-    s13@{ animation: fast }
-    s14@{ animation: fast }
-    s15@{ animation: fast }
-    s16@{ animation: fast }
-    s17@{ animation: fast }
-    s18@{ animation: fast }
-    s19@{ animation: fast }
+---
+config:
+  theme: base
+  themeVariables:
+    background: '#181818'
+    primaryColor: '#222'
+    primaryTextColor: '#eeeeee'
+    nodeBorder: '#888'
+    fontSize: 16px
+  layout: dagre
+---
+flowchart TB
+    start(["Start"]) e1@--> CE["Compose Email"]
+    CE e2@--> VAL["System Validates Email"]
+    VAL e3@-- Valid --> SEND{"Send Now?"}
+    VAL e4@-- Invalid --> ERR["Show Errors"]
+    ERR e5@--> CE
+    SEND e6@-- No, Schedule --> DB["Email Sent"]
+    SEND e7@-- Yes, Schedule --> SCH["Schedule Email"]
+    SCH e8@--> SMTP["Service"]
+    SMTP e9@--> STATUS["Track Status"]
+    STATUS e10@--> LIST["List (Sent, Scheduled, Failed, Drafts)"]
+    LIST e11@--> FILTER["Filter Emails"]
+    LIST e18@--> END(["End"])
+    FILTER e12@-.-> EDIT["Edit Draft"]
+    STATUS e13@-- Failed --> LOG["Log Failure & Retry"]
+    LOG e14@--> STATUS
+    SEND e15@-- No, Save as Draft --> DR["Save as Draft"]
+    DR e16@--> EDIT
+    EDIT e17@--> CE
+
+    style start animation:fast
+    style CE animation:fast
+    style VAL animation:fast
+    style SEND animation:fast
+    style ERR animation:fast
+    style DB animation:fast
+    style SCH animation:fast
+    style SMTP animation:fast
+    style STATUS animation:fast
+    style LIST animation:fast
+    style FILTER animation:fast
+    style END animation:fast
+    style EDIT animation:fast
+    style LOG animation:fast
+    style DR animation:fast
+
+    e1@{ animation: fast }
+    e2@{ animation: fast }
+    e3@{ animation: fast }
+    e4@{ animation: fast }
+    e5@{ animation: fast }
+    e6@{ animation: fast }
+    e7@{ animation: fast }
+    e8@{ animation: fast }
+    e9@{ animation: fast }
+    e10@{ animation: fast }
+    e11@{ animation: fast }
+    e12@{ animation: fast }
+    e13@{ animation: fast }
+    e14@{ animation: fast }
+    e15@{ animation: fast }
+    e16@{ animation: fast }
+    e17@{ animation: fast }
+    e18@{ animation: fast }
 ```
 ---
 
