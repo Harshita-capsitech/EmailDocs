@@ -143,11 +143,13 @@ erDiagram
         string UserId FK "Foreign Key to USER"
     }
 
-    %% Highlight VOICESTATUS to simulate 'active' state/focus
-    classDef active fill:#ffe066,stroke:#ffab00,stroke-width:3px
+    %% Highlight VOICESTATUS to simulate 'active' state/focus with black color
+    classDef active fill:#000000,stroke:#ffffff,stroke-width:3px
     class VOICESTATUS active
 
     %% Optionally, style keys for greater clarity
+
+
 ```
 
 ---
