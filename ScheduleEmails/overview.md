@@ -4,7 +4,14 @@
 
 ## **Overview**
 
-The **Email Module** is responsible for handling all email-related operations within the system, including email creation, editing, scheduling, sending, and tracking email statuses (e.g., sent, failed, pending). The module also allows users to manage drafts, view sent emails, and track failures. The Email Module integrates with other system components like the CRM, task management, and document storage systems to facilitate email-related activities.
+The **Email Module** serves as the backbone of communication within the system, managing a comprehensive range of email-related operations with unmatched efficiency and precision. It handles everything from the seamless creation and editing of emails to the sophisticated scheduling and timely delivery of messages. Beyond basic sending, this powerhouse module tracks email statuses meticulously—whether it's a successful delivery, a pending message, or a failed attempt—ensuring that no communication is ever lost.
+
+Designed to meet the needs of modern businesses, the Email Module offers users full control over their email activities, allowing them to manage drafts, review sent emails, and swiftly identify any failures or delivery issues. It seamlessly integrates with key system components, such as CRM, task management, and document storage, to create a unified communication experience.
+
+Whether you're sending invoices, client updates, or internal notifications, the Email Module empowers users with advanced features like automated retries for failed emails, detailed status tracking, and effortless email rescheduling. It acts as a central hub for all email-related tasks, ensuring that no message ever goes unnoticed or untracked.
+
+From drafting personalized messages to automating email workflows, this module is engineered to enhance efficiency and streamline communication processes, making it indispensable for every team within the system. With its robust functionality, the Email Module ensures that email management is no longer a chore, but a seamless, integrated experience that drives productivity and fosters communication across the entire organization.
+
 
 ---
 
@@ -218,23 +225,22 @@ erDiagram
 
 ### **API Endpoints**
 
-1. **GET /Emails**  
-   Fetch a list of emails. Supports filters such as user, team, folder, and search query.
-   
-2. **GET /Emails/{id}**  
-   Retrieve detailed information about a specific email.
+| **Description**                         | **HTTP Method** | **Endpoint**                                                                 |
+|-----------------------------------------|-----------------|-----------------------------------------------------------------------------|
+| **Send Email**                          | POST            | [/SendEmail](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Canned Messages**                 | GET             | [/CannedMessages](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Add New Draft**                       | POST            | [/SaveDraft](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Update Draft**                        | POST            | [/SaveDraft/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Draft Emails**                    | GET             | [/GetDraftMails](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Download Draft File**                 | GET             | [/DraftFileDownload](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Schedule Emails**                 | GET             | [/GetScheduleMails](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Add Schedule**                        | POST            | [/SaveSchedule](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Update Schedule**                     | POST            | [/SaveSchedule/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Update Schedule**                     | POST            | [/UpdateSchedule/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Schedule by ID**                  | GET             | [/schedule/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Send Scheduled Email**                | POST            | [/SendSchedule/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Download Schedule File**              | GET             | [/ScheduleFileDownload](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
 
-3. **POST /Emails**  
-   Create a new email or send an email immediately.
-
-4. **PUT /Emails/{id}**  
-   Update an email (e.g., edit a draft or reschedule a sent email).
-
-5. **GET /Emails/Threads/{id}**  
-   Retrieve all emails in a specific thread (useful for viewing conversations).
-
-6. **GET /Emails/InitialMessage**  
-   Retrieve the initial message in an email thread (used when replying to an email).
 
 ---
 
