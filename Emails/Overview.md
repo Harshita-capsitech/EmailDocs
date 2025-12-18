@@ -355,4 +355,3 @@ GET /admin/emails/{id}/attachment/{attachmentId}/Download
 
 ---
 
-This Markdown file provides an organized structure for the email system's technical documentation, covering all necessary details like the system overview, DFD, ERD, API references, and testing guidelines.
