@@ -131,8 +131,6 @@ flowchart LR
 
 ##  ER Diagram
 
-> **Movable/zoomable note:** Mermaid diagrams can be panned/zoomed in many Markdown viewers (GitHub, Mermaid Live, VSCode extensions). If your viewer is static, open the `.md` in a Mermaid-enabled renderer for drag/zoom.
-
 ```mermaid
 erDiagram
     PRACTICE {
@@ -335,6 +333,7 @@ curl -s "$BASE_URL/UserStats?fromDate=01/12/2025&toDate=31/12/2025&teamId=&sortD
 ### Notes
 - The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
 - Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+
 
 
 
