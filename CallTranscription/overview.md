@@ -1,13 +1,17 @@
 
 # **Voice Recording & AI Insights Module Documentation**
 
+---
+
 ## **Overview**
-The **Voice Recording & AI Insights** module is designed to enhance user interaction and provide comprehensive insights based on voice data. This module integrates two core features:
 
-1. **Voice Recording & Verification**: This feature captures and verifies the user's voice as part of the identity verification process, allowing voice biometrics to be used for secure authentication.
-2. **AI Insights**: This part handles the transcription of call recordings, providing detailed sentiment and emotional tone analysis to agents and managers. It uses AI models to provide actionable insights for improving user experience and call handling.
+The **Voice Recording & AI Insights** module is designed to enhance user interaction by collecting voice samples and providing comprehensive insights based on those voice recordings. It integrates two key features:
 
-These two features work together to provide both secure voice authentication and detailed post-call analytics, ensuring a seamless and effective workflow for agents and administrators.
+1. **Voice Recording & Collection**: This feature captures the user's voice sample to be used for identity verification or other purposes. It enables secure voice data collection while ensuring compliance with privacy standards. The voice sample is processed, but raw biometric data is never stored or processed directly in the core system.
+   
+2. **AI Insights**: This component handles the transcription of recorded voice data, offering sentiment analysis and emotional tone detection. The insights provided by the AI models help agents and managers improve user experience, call handling, and engagement by interpreting the emotional context behind customer interactions.
+
+These features work synergistically, ensuring both secure voice collection for possible future verification workflows and detailed, actionable analytics for agents or administrators.
 
 ---
 
@@ -19,7 +23,7 @@ flowchart LR
     user(("User"))
     ui(["Frontend UI"])
     aiinsights(["AIInsights Component"])
-    voiceModule(["Voice Module"])
+    api["API: /PhoneCalls/{id}/Transcription"]
 
     subgraph Backend
         direction TB
@@ -27,56 +31,42 @@ flowchart LR
         blob[("Azure Blob Storage<br/>(MP3 files)")]
         transcription[["Transcription Service"]]
         insights[["AI Insights<br/>(Tone, Sentiment)"]]
-        aiVerification[("AI Voice Verification")]
     end
 
-    user --> ui
-    ui --> aiinsights
-    ui --> voiceModule
-    aiinsights --> be
-    voiceModule --> be
-    aiinsights --> transcription
-    voiceModule --> aiVerification
-    transcription --> insights
-    insights --> ui
-    aiVerification --> ui
+    user e1@--> aiinsights
+    aiinsights e2@--> api
+    api e3@--> be
+    be e4@--> blob
+    be e5@--> transcription
+    transcription e6@--> insights
+    insights e7@--> ui
+    ui e8@-- "Delivers Insights" --> user
 
-    %% Styling
-    style user fill:#d6eaff,stroke:#3867d6,stroke-width:2px
-    style ui fill:#cae7ff,stroke:#3867d6,stroke-width:2px
-    style aiinsights fill:#b8e994,stroke:#38ada9,stroke-width:2px
-    style voiceModule fill:#f8a5c2,stroke:#f99c42,stroke-width:2px
-    style backend fill:#fff1e6,stroke:#833471,stroke-width:2px
-    style transcription fill:#f3a683,stroke:#b71540,stroke-width:2px
-    style insights fill:#f8a5c2,stroke:#b33771,stroke-width:2px
+    %% Animations
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
 ```
 
 ---
 
 ## **Process Flow**
 
-### **Voice Recording & Verification**:
+### **Voice Recording & Collection**:
+
 1. **User Interaction**: 
-   - User records a voice sample for identity verification.
-   - The **Voice Module** records the audio and sends it to the **AI Voice Verification** service for processing.
+   - The user records a voice sample for collection. The **Voice Module** captures the audio and transmits it to the **AI Voice Verification** service.
+   
+2. **Processing**: 
+   - The audio sample is processed through AI models. This process does not involve verification but prepares the voice data for any future verification or analysis.
 
-2. **Verification**: 
-   - The voice sample is verified using AI algorithms. A result is returned indicating whether the voice sample matches the expected voice profile.
-
-3. **Results Display**: 
-   - The verification result is displayed to the user (e.g., successful verification or failure).
-
-### **AI Insights**:
-1. **User Interaction**: 
-   - User selects a call to view detailed insights.
-   - The **AIInsights Component** sends an API request to fetch transcription and insights.
-
-2. **Data Fetching**: 
-   - Backend retrieves the **call recording (MP3)** from **Azure Blob Storage**.
-   - The **Transcription Service** converts the MP3 file into text and performs sentiment and tone analysis.
-
-3. **Displaying Insights**: 
-   - The transcription and tone analysis data are displayed to the user via the frontend.
+3. **Data Handling**: 
+   - The voice data is stored securely in **Azure Blob Storage**, ensuring that no raw biometric data is stored or processed by the core system.
 
 ---
 
@@ -84,140 +74,100 @@ flowchart LR
 
 ```mermaid
 erDiagram
-    USER ||--o| PHONECALL : handles
-    USER ||--o| VOICESTATUS : verifies
-    PHONECALL ||--o| BLOBSTORAGE : stores
-    PHONECALL {
+    direction LR
+
+    USER ||--o| VOICESTATUS : has
+
+    USER {
         string Id PK "Primary Key"
-        string CallSid
-        datetime StartTime
-        datetime EndTime
-        string Status
-        string Direction
-        int Duration
-        string ContactId FK
-        string UserId FK
-        string BlobUrl
+        int PracticeId
     }
+
     VOICESTATUS {
-        bool Recorded "Has Voice Recording"
+        bool Recorded "Has Voice Sample"
         datetime On "Date Recorded"
         string UserId FK "Foreign Key to USER"
     }
-    BLOBSTORAGE {
-        string BlobUrl "URL of the MP3 file in Blob Storage"
-        string BlobName "Name of the stored MP3 file"
-    }
-    USER {
-        string Id PK
-        string Name
-        string Role
-    }
-    CONTACT {
-        string Id PK
-        string Name
-        string PhoneNumber
-    }
+
+    %% Highlight VOICESTATUS to simulate 'active' state/focus with black color
+    classDef active fill:#000000,stroke:#ffffff,stroke-width:3px
+    class VOICESTATUS active
+
+    %% Optionally, style keys for greater clarity
 ```
 
 ---
 
-## **Entity Definitions**
+## **Entity Definition**
 
-### **User**
-- **Id**: Unique identifier for the user (e.g., agent).
-- **Name**: Full name of the user.
-- **Role**: Role of the user (e.g., Admin, Agent).
+### ApplicationUserVoiceStatus
 
-### **PhoneCall**
-- **Id**: Unique identifier for each phone call.
-- **CallSid**: Unique identifier for the call, provided by Twilio.
-- **StartTime**: Timestamp of when the call started.
-- **EndTime**: Timestamp of when the call ended.
-- **Status**: Status of the call (e.g., completed, in-progress).
-- **Direction**: Direction of the call (incoming or outgoing).
-- **Duration**: Duration of the call in seconds.
-- **ContactId**: Foreign key to the **Contact** entity.
-- **UserId**: Foreign key to the **User** entity (the agent handling the call).
-- **BlobUrl**: URL pointing to the MP3 recording in **Blob Storage**.
+Represents the collection state of a user’s voice sample.
 
-### **VoiceStatus**
-- **Recorded**: Indicates whether the user's voice has been successfully recorded.
-- **On**: Timestamp of when the last successful voice recording was made.
+Fields:
+- **Recorded**: Indicates whether a voice sample was successfully collected.
+- **On**: Timestamp of the last collected sample.
 
-### **BlobStorage**
-- **BlobUrl**: URL pointing to the stored MP3 file in Blob Storage.
-- **BlobName**: Name of the MP3 file (e.g., `call_12345.mp3`).
-
-### **Contact**
-- **Id**: Unique identifier for the contact (client).
-- **Name**: Name of the contact.
-- **PhoneNumber**: Contact's phone number.
+This structure ensures minimal data storage to maintain privacy and compliance.
 
 ---
 
 ## **Authentication / APIs**
 
-### Authentication:
-The system uses **JWT-based authentication** to secure access to the API endpoints.
+### Frontend APIs (ProfileService)
 
-### API Endpoints
+1. **checkAudio**
+   - Endpoint: `/sample`
+   - Method: `POST`
+   - Payload: `multipart/form-data`
+   - Responsibility: Initiates audio collection and prepares the sample for processing.
 
-1. **GET /PhoneCalls/{id}/Transcription**  
-   Fetches the transcription of the call recording, along with sentiment analysis and tone data.
+2. **uploadAudio**
+   - Endpoint: `/Auth/UploadAudio`
+   - Method: `POST`
+   - Payload: `boolean`
+   - Responsibility: Persists the collection result into the backend system.
 
-   **Request Example:**
-   ```js
-   axios.get('/PhoneCalls/{callId}/Transcription');
-   ```
+---
 
-2. **GET /PhoneCalls/{id}/Insights**  
-   Retrieves detailed insights including transcription and tone analysis for the call.
+### Backend API (AuthController)
 
-   **Response Example:**
-   ```json
-   {
-     "transcription": "Hello, how can I assist you today?",
-     "tones": [
-       { "label": "joy", "score": 0.75 },
-       { "label": "neutral", "score": 0.15 }
-     ]
-   }
-   ```
+1. **POST /Auth/UploadAudio**
 
-3. **GET /BlobStorage/{callId}/Recording**  
-   Retrieves the MP3 recording stored in **Azure Blob Storage** for the given call.
+Behavior:
+   1. Validates authenticated user.
+   2. Filters MongoDB document using `PracticeId` and `UserId`.
+   3. Updates `user.voice.recorded` and `user.voice.on`.
+
+Note: No raw audio is stored or processed at this layer.
 
 ---
 
 ## **Testing Guide**
 
-### Unit Testing
-- **Test API calls**: Ensure the backend APIs fetch the correct MP3 files from Blob Storage and process the transcription correctly.
-  - Test that the transcription and sentiment analysis are properly generated.
-  - Validate edge cases such as missing recordings, invalid call IDs, etc.
-
-### Integration Testing
-- **Test Frontend and Backend Interaction**: Ensure the frontend correctly interacts with the backend APIs to fetch transcription and tone analysis data.
-  - Test the flow from initiating a call request to receiving and displaying the insights.
-
-### End-to-End Testing
-- **Simulate Real User Behavior**: Test the entire system by simulating a real user journey, from placing a call, storing the recording, transcribing it, and displaying the insights in the frontend UI.
+- **Frontend Testing**: Test microphone permissions, auto-stop after 60 seconds, and UI paths for success or failure in the recording process.
+- **API Testing**: Use the `POST /Auth/UploadAudio` endpoint with a `true` or `false` payload.
+- **Database Validation**: Query the `ApplicationUser.Voice` fields directly in MongoDB to validate the successful recording.
 
 ---
 
 ## **References**
 
-- **Azure Blob Storage Documentation**: [Azure Blob Storage Docs](https://docs.microsoft.com/en-us/azure/storage/blobs/)
-- **Twilio API Documentation**: [Twilio Docs](https://www.twilio.com/docs)
-- **Sentiment Analysis API**: [AI Sentiment API Documentation](#) (Example URL)
+- `VoiceRecordingModal.tsx`
+- `Profile.tsx`
+- `ProfileService.tsx`
+- `AuthController.cs`
 
 ---
 
 ## **Version and Change Log**
 
-- **v1.0.0** (2025-12-18): Initial release with transcription and tone analysis features.
-- **v1.1.0** (2025-12-25): Added integration with **Azure Blob Storage** for MP3 file handling and storage.
-- **v1.2.0** (2026-01-10): Enhanced sentiment analysis and improved UI for displaying insights.
+**v1.0.0**
+- Initial release for voice sample collection.
+- Integration with transcription and AI insights.
+- MongoDB persistence for voice collection status.
 
 ---
+
+End of Document
+
