@@ -112,6 +112,11 @@ erDiagram
         string recipients
         string content
         datetime scheduledTime
+        string draftRefId
+        string from
+        int fileCount
+        string lastError
+        string status
     }
     DRAFTEMAIL:::darknode {
         int draftEmailId PK
@@ -119,6 +124,8 @@ erDiagram
         string recipients
         string content
         datetime saveTime
+        string from
+        int fileCount
     }
     SCHEDULEDSTATUS:::darknode {
         int statusId PK
@@ -129,16 +136,43 @@ erDiagram
         string filename
         string filetype
     }
+    CONTACTS:::darknode {
+        int contactId PK
+        string contactName
+    }
+    COMPANY:::darknode {
+        int companyId PK
+        string companyName
+    }
+    EMAILID:::darknode {
+        int emailId PK
+        string emailContent
+    }
+    SCHEDULEDATETIME:::darknode {
+        string followUpDate
+        string followUpHour
+        string followUpMinute
+        string followUpTT
+        string timezone
+    }
 
     USER ||--o{ SCHEDULEEMAIL : "schedules"
     USER ||--o{ DRAFTEMAIL : "has draft"
     SCHEDULEEMAIL }o--|| SCHEDULEDSTATUS : "status"
     SCHEDULEEMAIL ||--o{ ATTACHMENT : "has"
     DRAFTEMAIL ||--o{ ATTACHMENT : "has"
+    SCHEDULEEMAIL ||--o{ CONTACTS : "related to"
+    SCHEDULEEMAIL ||--o{ COMPANY : "related to"
+    SCHEDULEEMAIL ||--o{ EMAILID : "has"
+    SCHEDULEEMAIL ||--o{ SCHEDULEDATETIME : "schedules at"
+    DRAFTEMAIL ||--o{ CONTACTS : "related to"
+    DRAFTEMAIL ||--o{ COMPANY : "related to"
+    DRAFTEMAIL ||--o{ EMAILID : "has"
+    DRAFTEMAIL ||--o{ SCHEDULEDATETIME : "schedules at"
 
     %% Dark, grey style
     classDef darknode fill:#222,stroke:#555,stroke-width:3px,color:#ddd;
-    class USER,SCHEDULEEMAIL,DRAFTEMAIL,SCHEDULEDSTATUS,ATTACHMENT darknode
+    class USER,SCHEDULEEMAIL,DRAFTEMAIL,SCHEDULEDSTATUS,ATTACHMENT,CONTACTS,COMPANY,EMAILID,SCHEDULEDATETIME darknode
 ```
 ---
 
@@ -186,5 +220,6 @@ erDiagram
 - **Version 1.2**: UI enhancements for draft management and scheduling.
 
 ---
+
 
 
