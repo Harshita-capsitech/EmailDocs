@@ -14,7 +14,6 @@ The **Schedule Email** feature allows users to schedule emails to be sent at a l
 
 ## DFD (Data Flow Diagram)
 ```mermaid
-
 flowchart TD
     %% External Entities
     User[(User)]
@@ -80,21 +79,78 @@ flowchart TD
 ---
 
 ## Process Flow
-1. **Email Scheduling**: 
-   - User enters email details in the **Edit Email** component.
-   - The email is submitted and processed by the **ScheduleSend** component.
-   - The email is stored in the system with a scheduled time for sending.
-
-2. **Email Sending**:
-   - The **ProcessScheduleEmail** service sends the email at the scheduled time.
-   - If the email fails to send, the **ProcessFailedScheduleEmails** component handles retry attempts.
-
-3. **Draft and Reschedule Management**:
-   - Emails that fail to send or are not yet sent can be rescheduled or moved to drafts using the **ScheduleEmailList** component.
-
-4. **Notifications**: 
-   - If the email fails to send, users are notified and the email status is updated.
-
+```mermaid
+---
+config:
+  layout: dagre
+---
+flowchart TB
+    user(("User")) e1@-- starts --> edit["Edit Email
+(Enter Details)"]
+    edit e2@-- submit for scheduling --> scheduleSend["Schedule Send
+(Process Submission)"]
+    scheduleSend e3@-- store with time --> store["Store Email
+with Scheduled Time"]
+    store e4@-- ready to send at scheduled time --> process["Process Schedule Email
+(Service)"]
+    process e5@-- trigger send --> send["Send Email"]
+    send e6@-- send attempt --> status{"Email Sent?"}
+    status e7@-- Yes --> finished["End"]
+    status e8@-- No --> retry["Process Failed Schedule Emails
+(Retry/Fail Handler)"]
+    retry e9@-- retry or fail --> scheduleList["Schedule Email List
+(Draft/Reschedule Mgt)"]
+    scheduleList e10@-- move to drafts --> draft["Move to Draft"]
+    scheduleList e11@-- reschedule --> reschedule["Reschedule Email"]
+    retry e12@-- notify + update status --> notif["Notify User
+Update Status"]
+    notif e13@-- acknowledge --> finished
+    edit@{ shape: rect}
+    scheduleSend@{ shape: rect}
+    store@{ shape: cyl}
+    process@{ shape: rect}
+    send@{ shape: rect}
+    finished@{ shape: dbl-circ}
+    retry@{ shape: rect}
+    scheduleList@{ shape: rect}
+    draft@{ shape: rect}
+    reschedule@{ shape: rect}
+    notif@{ shape: rounded}
+     edit:::core
+     scheduleSend:::core
+     store:::core
+     process:::core
+     send:::core
+     scheduleList:::core
+     draft:::core
+     reschedule:::core
+    classDef core fill:#e3ecfa,stroke:#364fc7,stroke-width:2px
+    style user stroke:#000000,color:#FFFFFF,fill:#757575
+    style edit fill:#757575,stroke:#000000,color:#FFFFFF
+    style scheduleSend fill:#757575,stroke:#000000,color:#FFFFFF
+    style store fill:#757575,stroke:#000000,color:#FFFFFF
+    style process fill:#757575,stroke:#000000,color:#FFFFFF
+    style send fill:#757575,color:#FFFFFF,stroke:#000000
+    style status fill:#757575,color:#FFFFFF
+    style retry color:#FFFFFF,fill:#757575
+    style scheduleList fill:#757575,color:#FFFFFF,stroke:#000000
+    style draft color:#FFFFFF,fill:#757575,stroke:#000000
+    style reschedule fill:#757575,color:#FFFFFF,stroke:#000000
+    style notif fill:#757575,color:#FFFFFF
+    e1@{ animation: fast }
+    e2@{ animation: fast }
+    e3@{ animation: fast }
+    e4@{ animation: fast }
+    e5@{ animation: fast }
+    e6@{ animation: fast }
+    e7@{ animation: fast }
+    e8@{ animation: fast }
+    e9@{ animation: fast }
+    e10@{ animation: fast }
+    e11@{ animation: fast }
+    e12@{ animation: fast }
+    e13@{ animation: fast }
+```
 ---
 
 ## ER Diagram
@@ -220,6 +276,7 @@ erDiagram
 - **Version 1.2**: UI enhancements for draft management and scheduling.
 
 ---
+
 
 
 
