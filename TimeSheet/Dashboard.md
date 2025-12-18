@@ -324,10 +324,21 @@ erDiagram
         string userId FK "User ID"
     }
 
+    UserStat {
+        string id PK "UserStat Entry ID"
+        string userId FK "User ID"
+        date period "Period (Day/Month/Year)"
+        integer totalTime "Total Time"
+        integer totalSales "Total Sales"
+        integer totalCommunications "Total Communications"
+        integer totalQuotes "Total Quotes"
+    }
+
     %% Relationships
     User ||--o| Team : "Assigned to"
     User ||--o| TimeSheet : "Reports time for"
     User ||--o| Communication : "Makes communication"
+    User ||--o| UserStat : "Has stats"
     Team ||--o| BusinessQuote : "Generates quotes"
     Team ||--o| BusinessInvoice : "Generates invoices"
     Team ||--o| WebsiteQuery : "Handles queries"
@@ -337,15 +348,13 @@ erDiagram
     BusinessInvoice ||--o| Team : "Assigned to"
     WebsiteQuery ||--o| Team : "Handled by"
     Review ||--o| User : "Reviewed by"
-
+    UserStat ||--|| User : "Stat for user"
 ```
 
 ---
 
 
 ## Entity Definitions for Timesheet Dashboard System
-
-# Entity Definitions for Timesheet Dashboard
 
 ## 1. **User**
 - **id** (PK): Unique User Identifier
@@ -409,10 +418,6 @@ erDiagram
 - **Team** handles **WebsiteQuery**
 - **Team** receives **Review**
 
-
----
-
-This structure should provide a clear and organized view of the entities involved in the Timesheet Dashboard system, including their relationships and attributes.
 
 ---
 
@@ -534,6 +539,7 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
 ### Notes
 - The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
 - Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+
 
 
 
