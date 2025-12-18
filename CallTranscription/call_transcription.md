@@ -26,27 +26,24 @@ flowchart LR
         insights[["AI Insights<br/>(Tone, Sentiment)"]]
     end
 
-    user --> aiinsights
-    aiinsights --> api
-    api --> be
-    be --> blob
-    be --> transcription
-    transcription --> insights
-    insights --> ui
-    ui -- "Delivers Insights" --> user
+    user e1@--> aiinsights
+    aiinsights e2@--> api
+    api e3@--> be
+    be e4@--> blob
+    be e5@--> transcription
+    transcription e6@--> insights
+    insights e7@--> ui
+    ui e8@-- "Delivers Insights" --> user
 
-    %% Styling
-    style user fill:#d6eaff,stroke:#3867d6,stroke-width:2px
-    style ui fill:#cae7ff,stroke:#3867d6,stroke-width:2px
-    style aiinsights fill:#b8e994,stroke:#38ada9,stroke-width:2px
-    style api fill:#edf285,stroke:#b3a123,stroke-width:2px
-    style be fill:#fff1e6,stroke:#833471,stroke-width:2px
-    style blob fill:#f9e4b7,stroke:#3d3d3d,stroke-width:2px
-    style transcription fill:#f8a5c2,stroke:#b33771,stroke-width:2px
-    style insights fill:#f3a683,stroke:#b71540,stroke-width:2px
-
-    %% Backend Group Styling
-    style Backend stroke:#222f3e,stroke-width:2px
+    %% Animations
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
 ```
 
 ### Explanation:
@@ -212,7 +209,5 @@ The system uses **JWT-based authentication** for securing access to the API endp
 ## **Version and Change Log**
 
 - **v1.0.0** (2025-12-18): Initial release with transcription and tone analysis features.
-- **v1.1.0** (2025-12-25): Added integration with **Azure Blob Storage** for MP3 file handling and storage.
-- **v1.2.0** (2026-01-10): Enhanced sentiment analysis and improved UI for displaying insights.
 
 ---
