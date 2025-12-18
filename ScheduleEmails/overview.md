@@ -74,7 +74,7 @@ flowchart TD
 ```
 ---
 
-## **Process Flow**
+## **Process Flow  (Process Flow Diagram)**
 ```mermaid
 ---
 config:
