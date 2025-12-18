@@ -12,45 +12,49 @@ The **Email Module** is responsible for handling all email-related operations wi
 ```mermaid
 flowchart TD
     %% External Entities
-    User u1@-->|"Create/Send/Edit/View Emails"| EmailModule
-    EmailService es1@-->|"Send Emails"| EmailModule
-    Database db1@-->|"Store Email Data"| EmailModule
-    FailureLog fl1@-->|"Log Failed Emails"| EmailModule
+    User[(User)]
+    AuthService[Authentication Service]
+    
     %% Processes
-    CreateEmail p1@-->|"Email Data"| EmailModule
-    SaveDraft p2@-->|"Draft Email"| EmailModule
-    ScheduleEmail p3@-->|"Scheduled Time"| EmailModule
-    SendEmail p4@-->|"Sent Email Data"| EmailService
-    TrackFailures p5@-->|"Failure Details"| FailureLog
+    CreateEmail p1@-->|"Create Email Content"| SaveDraft
+    SaveDraft p2@-->|"Save Draft Email"| ScheduleEmail
+    ScheduleEmail p3@-->|"Schedule Email Time"| ProcessScheduleEmail
+    ProcessScheduleEmail p4@-->|"Process Scheduled Email"| SendEmail
+    SendEmail p5@-->|"Send Email Data"| Service
+    TrackFailures p6@-->|"Log Failed Emails"| FailureLog
+    CleanDraftEmails p7@-->|"Delete Old Drafts"| Database
+    RetryFailedEmails p8@-->|"Retry Failed Scheduled Emails"| Service
+
     %% Data Stores
-    EmailModule d1@-->|"Store Email"| Database
-    EmailModule d2@-->|"Store Failure Data"| FailureLog
-    EmailModule d3@-->|"Retrieve Email Data"| Database
-    EmailModule d4@-->|"Retrieve Failure Data"| FailureLog
+    Database d1@-->|"Store Email and Drafts"| Database
+    FailureLog d2@-->|"Store Failure Details"| FailureLog
+
     %% Data Flow
     User df1@-->|"Create Email"| CreateEmail
     User df2@-->|"Save Draft"| SaveDraft
     User df3@-->|"Schedule Email"| ScheduleEmail
     User df4@-->|"Send Email"| SendEmail
-    User df5@-->|"View Sent/Scheduled Emails"| EmailModule
-    EmailModule df6@-->|"Send Email to Service"| EmailService
-    EmailModule df7@-->|"Retrieve Sent Emails"| Database
-    EmailModule df8@-->|"Retrieve Drafts"| Database
-    EmailModule df9@-->|"Track Failed Emails"| TrackFailures
+    User df5@-->|"View Sent/Scheduled Emails"| Database
+    AuthService df6@-->|"Authenticate User"| CreateEmail
+    Service df7@-->|"Send Email to Service"| Service
+    Database df8@-->|"Retrieve Drafts/Emails"| Database
+    FailureLog df9@-->|"Track Failed Emails"| TrackFailures
+    CleanDraftEmails df10@-->|"Clean Old Drafts/Sent Emails"| CleanDraftEmails
+    RetryFailedEmails df11@-->|"Retry Failed Emails"| RetryFailedEmails
+
     %% Edge Animations
-    u1@{ animation: fast }
-    es1@{ animation: fast }
-    db1@{ animation: fast }
-    fl1@{ animation: fast }
+    User@{ animation: fast }
+    AuthService@{ animation: fast }
     p1@{ animation: fast }
     p2@{ animation: fast }
     p3@{ animation: fast }
     p4@{ animation: fast }
     p5@{ animation: fast }
+    p6@{ animation: fast }
+    p7@{ animation: fast }
+    p8@{ animation: fast }
     d1@{ animation: fast }
     d2@{ animation: fast }
-    d3@{ animation: fast }
-    d4@{ animation: fast }
     df1@{ animation: fast }
     df2@{ animation: fast }
     df3@{ animation: fast }
@@ -60,17 +64,24 @@ flowchart TD
     df7@{ animation: fast }
     df8@{ animation: fast }
     df9@{ animation: fast }
+    df10@{ animation: fast }
+    df11@{ animation: fast }
+
     %% Optional: make stores/circle/process shapes stand out
     Database@{ shape: cyl }
     FailureLog@{ shape: cyl }
-    EmailService@{ shape: rect }
-    EmailModule@{ shape: stadium }
+    Service@{ shape: rect }
     CreateEmail@{ shape: rect }
     SaveDraft@{ shape: rect }
     ScheduleEmail@{ shape: rect }
+    ProcessScheduleEmail@{ shape: rect }
     SendEmail@{ shape: rect }
     TrackFailures@{ shape: rect }
+    CleanDraftEmails@{ shape: rect }
+    RetryFailedEmails@{ shape: rect }
     User@{ shape: circle }
+    AuthService@{ shape: circle }
+
 ```
 ---
 
