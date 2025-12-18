@@ -49,108 +49,56 @@ This section provides insights into communication activity within the organizati
 
 ```mermaid
 flowchart TD
-    %% ========================================
-    %% FRONTEND LAYER - User Interface
-    %% ========================================
-    admin["👤 Admin/Manager User"]
-    frontend["React Frontend<br/>Dashboard"]
-    
-    admin --> frontend
-    
-    %% ========================================
-    %% REPORT COMPONENTS - Feature Cards
-    %% ========================================
-    subgraph ReportCards["📊 Report Components"]
-        direction LR
-        timesheet["⏱️ Timesheet<br/>Report"]
-        sales["💰 Sales<br/>Report"]
-        comm["📞 Communication<br/>Overview"]
-        quotes["📝 Quotes<br/>Report"]
+    %% Main Steps
+    user("User")
+    frontend["Frontend"]
+
+    subgraph features ["Features"]
+      direction LR
+      comm("Communication Overview")
+      salesq("Sales and Quotes")
+      overview("Overview Report")
+      userstat("UserStat")
     end
-    
-    frontend --> ReportCards
-    
-    %% ========================================
-    %% API LAYER - Request Routing
-    %% ========================================
-    subgraph APILayer["🔌 API Endpoints"]
-        direction LR
-        api1["/api/UserStats"]
-        api2["/api/SalesReport"]
-        api3["/api/Communication"]
-        api4["/api/QuotesSales"]
-    end
-    
-    timesheet --> api1
-    sales --> api2
-    comm --> api3
-    quotes --> api4
-    
-    %% ========================================
-    %% BACKEND LAYER - Business Logic
-    %% ========================================
-    controller["🎯 Backend API Controller<br/><i>Processes requests & orchestrates data</i>"]
-    
-    api1 --> controller
-    api2 --> controller
-    api3 --> controller
-    api4 --> controller
-    
-    %% ========================================
-    %% DATABASE AGGREGATION - MongoDB Queries
-    %% ========================================
-    subgraph MongoAgg["🔍 MongoDB Aggregation Pipeline"]
-        direction TB
-        agg1["Aggregate User Stats<br/><i>Group by user, date range</i>"]
-        agg2["Aggregate Sales Data<br/><i>Sum invoices, calculate totals</i>"]
-        agg3["Aggregate Communication<br/><i>Count calls, duration stats</i>"]
-        agg4["Aggregate Quotes<br/><i>Status, conversion rates</i>"]
-    end
-    
-    controller --> MongoAgg
-    
-    %% ========================================
-    %% DATABASE LAYER - Data Sources
-    %% ========================================
-    subgraph MongoDB["💾 MongoDB Collections"]
-        direction LR
-        db1[("ApplicationUser<br/>Collection")]
-        db2[("PhoneCall<br/>Collection")]
-        db3[("BusinessInvoice<br/>Collection")]
-        db4[("WebsiteQuery<br/>Collection")]
-    end
-    
-    agg1 -.reads.-> db1
-    agg2 -.reads.-> db3
-    agg3 -.reads.-> db2
-    agg4 -.reads.-> db4
-    
-    %% ========================================
-    %% RESPONSE FLOW - Data Return Path
-    %% ========================================
-    response["📤 JSON Response<br/><i>Aggregated data returned</i>"]
-    
-    MongoAgg --> response
-    response --> frontend
-    
-    %% ========================================
-    %% STYLING
-    %% ========================================
-    classDef userStyle fill:#e1f5ff,stroke:#01579b,stroke-width:2px
-    classDef frontendStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef apiStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef backendStyle fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
-    classDef dbStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef responseStyle fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-    
-    class admin userStyle
-    class frontend frontendStyle
-    class timesheet,sales,comm,quotes frontendStyle
-    class api1,api2,api3,api4 apiStyle
-    class controller backendStyle
-    class agg1,agg2,agg3,agg4 backendStyle
-    class db1,db2,db3,db4 dbStyle
-    class response responseStyle
+
+    api["API"]
+    backend{{"Backend"}}
+    agg["Aggregation"]
+    db[("Database")]
+    resp["Response"]
+
+    %% Animated edges for "movable" effect
+    user e1@--> frontend
+    frontend e2@--> comm
+    frontend e3@--> salesq
+    frontend e4@--> overview
+    frontend e5@--> userstat
+
+    comm e6@--> api
+    salesq e7@--> api
+    overview e8@--> api
+    userstat e9@--> api
+    api e10@--> backend
+    backend e11@--> agg
+    agg e12@--> db
+    db e13@--> resp
+    resp e14@--> frontend
+
+    %% Turn on edge animations
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
+    e9@{ animate: true }
+    e10@{ animate: true }
+    e11@{ animate: true }
+    e12@{ animate: true }
+    e13@{ animate: true }
+    e14@{ animate: true }
 ```
 
 ---
@@ -158,104 +106,50 @@ flowchart TD
 ## Process Flow
 
 ```mermaid
----
-config:
-  layout: fixed
----
-flowchart LR
-    admin(("Admin/Manager
-User")) e1@--> frontend(["Browser UI"])
-    frontend e2@--> timesheet["Timesheet
-Report Card"] & sales["Sales
-Report Card"] & comm["Communication
-Overview"] & quotes["Quotes
-Report Card"] & userstats["User Stats
-Table"]
-    timesheet e7@--> apiUserStats["API Call
-/UserStats"]
-    sales e8@--> apiSales["API Call
-/SalesReport"]
-    comm e9@--> apiComm["API Call
-/Communication"]
-    quotes e10@--> apiQuotes["API Call
-/QuotesSales"]
-    apiUserStats e11@--> backendUserStats["Backend Logic"]
-    apiSales e12@--> backendSales["Backend Logic"]
-    apiComm e13@--> backendComm["Backend Logic"]
-    apiQuotes e14@--> backendQuotes["Backend Logic"]
-    backendUserStats e15@--> backendAPI(["Backend API
-Controller"])
-    backendSales e16@--> backendAPI
-    backendComm e17@--> backendAPI
-    backendQuotes e18@--> backendAPI
-    backendAPI e19@--> mdbUserStats["MongoDB
-Agg: User Stats"] & mdbSales["MongoDB
-Agg: Sales"] & mdbComm["MongoDB
-Agg: Communication"] & mdbQuotes["MongoDB
-Agg: Quotes"] & backendDB["MongoDB"]
-    mdbUserStats e23@--> returnData["Data Returned
-to Frontend"]
-    mdbSales e24@--> returnData
-    mdbComm e25@--> returnData
-    mdbQuotes e26@--> returnData
-    backendDB e28@--> appUserDB["ApplicationUserDB"] & phoneCallDB["PhoneCallDB"] & businessInvoiceDB["BusinessInvoiceDB"] & businessQuoteDB["BusinessQuoteDB"]
-    appUserDB e32@--> userData["Fetch User Data"]
-    phoneCallDB e33@--> commData["Fetch Comm Data"]
-    businessInvoiceDB e34@--> salesData["Fetch Sales Data"]
-    businessQuoteDB e35@--> quoteData["Fetch Quote Data"]
+flowchart TB
+    user["User"] --> userAuth["Authenticate User"]
+    userAuth --> authService["Authentication Auth Service"]
+    authService --> admin["Admin/Manager<br/>User"]
+    admin --> frontend["Browser UI"]
+    frontend --> timesheet["Timesheet<br/>Report Card"] & salesQuotes["Sales and Quotes"] & comm["Communication<br/>Overview"] & userstats["User Stats<br/>Table"]
+    timesheet --> apiOverview["API Call<br/>/OverviewReport"]
+    userstats --> apiUserStats["API Call<br/>/UserStats"]
+    salesQuotes --> apiSalesQuotes["API Call<br/>/SalesAndQuotes"]
+    comm --> apiComm["API Call<br/>/Communication"]
+    apiOverview --> backendAPI["Backend API Controller"]
+    apiUserStats --> backendAPI
+    apiSalesQuotes --> backendAPI
+    apiComm --> backendAPI
+    backendAPI --> backendDB["MongoDB"]
+    backendDB --> appUserDB["ApplicationUserDB"] & phoneCallDB["PhoneCallDB"] & businessInvoiceDB["BusinessInvoiceDB"] & businessQuoteDB["BusinessQuoteDB"]
+    appUserDB --> userData["Fetch User Data"]
+    phoneCallDB --> commData["Fetch Comm Data"]
+    businessInvoiceDB --> salesData["Fetch Sales Data"]
+    businessQuoteDB --> quoteData["Fetch Quote Data"]
 
+    user@{ shape: cyl}
+    userAuth@{ shape: rounded}
+    authService@{ shape: rect}
+    admin@{ shape: cyl}
+    frontend@{ shape: rect}
     timesheet@{ shape: notch-rect}
-    sales@{ shape: notch-rect}
+    salesQuotes@{ shape: notch-rect}
     comm@{ shape: notch-rect}
-    quotes@{ shape: notch-rect}
     userstats@{ shape: notch-rect}
+    apiOverview@{ shape: rect}
     apiUserStats@{ shape: rect}
-    apiSales@{ shape: rect}
+    apiSalesQuotes@{ shape: rect}
     apiComm@{ shape: rect}
-    apiQuotes@{ shape: rect}
-    backendUserStats@{ shape: rect}
-    backendSales@{ shape: rect}
-    backendComm@{ shape: rect}
-    backendQuotes@{ shape: rect}
-    mdbUserStats@{ shape: cyl}
-    mdbSales@{ shape: cyl}
-    mdbComm@{ shape: cyl}
-    mdbQuotes@{ shape: cyl}
+    backendAPI@{ shape: rect}
     backendDB@{ shape: cyl}
-    returnData@{ shape: rect}
-    appUserDB@{ shape: fr-rect}
-    phoneCallDB@{ shape: fr-rect}
-    businessInvoiceDB@{ shape: fr-rect}
-    businessQuoteDB@{ shape: fr-rect}
+    appUserDB@{ shape: rect}
+    phoneCallDB@{ shape: rect}
+    businessInvoiceDB@{ shape: rect}
+    businessQuoteDB@{ shape: rect}
     userData@{ shape: rect}
     commData@{ shape: rect}
     salesData@{ shape: rect}
     quoteData@{ shape: rect}
-
-    e1@{ animation: fast } 
-    e2@{ animation: fast } 
-    e7@{ animation: fast } 
-    e8@{ animation: fast } 
-    e9@{ animation: fast } 
-    e10@{ animation: fast } 
-    e11@{ animation: fast } 
-    e12@{ animation: fast } 
-    e13@{ animation: fast } 
-    e14@{ animation: fast } 
-    e15@{ animation: fast } 
-    e16@{ animation: fast } 
-    e17@{ animation: fast } 
-    e18@{ animation: fast } 
-    e19@{ animation: fast } 
-    e23@{ animation: fast } 
-    e24@{ animation: fast } 
-    e25@{ animation: fast } 
-    e26@{ animation: fast } 
-    e28@{ animation: fast } 
-    e32@{ animation: fast } 
-    e33@{ animation: fast } 
-    e34@{ animation: fast } 
-    e35@{ animation: fast }
 ```
 
 ##  ER Diagram
@@ -540,6 +434,7 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
 ### Notes
 - The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
 - Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+
 
 
 
