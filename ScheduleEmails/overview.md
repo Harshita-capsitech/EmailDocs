@@ -18,54 +18,64 @@ From drafting personalized messages to automating email workflows, this module i
 ## **DFD (Data Flow Diagram)**
 ```mermaid
 flowchart TD
-    %% External Entities
-    User u1@-->|"Create/Send/Edit/View Emails"| Database
-    EmailService es1@-->|"Send Emails"| Database
-    FailureLog fl1@-->|"Log Failed Emails"| Database
+   %% External Entity
+User[(User)]
 
-    %% Processes
-    CreateEmail p1@-->|"Email Data"| Database
-    SaveDraft p2@-->|"Draft Email"| Database
-    ScheduleEmail p3@-->|"Scheduled Time"| Database
-    SendEmail p4@-->|"Sent Email Data"| EmailService
-    TrackFailures p5@-->|"Failure Details"| FailureLog
+%% Authentication
+P1((Authenticate User))
+AuthService[Authentication Auth Service]
+
+    %% Main Processes
+    CreateEmail p2@-->|"Email Data"| Database
+    SaveDraft p3@-->|"Draft Email"| Database
+    ScheduleEmail p4@-->|"Scheduled Time"| Service
+    SendEmail p5@-->|"Sent Email Data"| Database
+    TrackFailures p6@-->|"Failure Details"| FailureLog
 
     %% Data Flow
-    User df1@-->|"Create Email"| CreateEmail
-    User df2@-->|"Save Draft"| SaveDraft
-    User df3@-->|"Schedule Email"| ScheduleEmail
-    User df4@-->|"Send Email"| SendEmail
-    User df5@-->|"View Sent/Scheduled Emails"| Database
-    Database df6@-->|"Send Email to Service"| EmailService
-    Database df9@-->|"Track Failed Emails"| TrackFailures
+User edge1@--> P1
+P1 edge2@--> AuthService
+AuthService edge3@--> P1
+    P1 df1@-->|"Create Email"| CreateEmail
+    P1 df2@-->|"Save Draft"| SaveDraft
+    P1 df3@-->|"Send Email"| SendEmail
+    P1 df4@-->|"View Sent/Scheduled Emails"| Database
+    SendEmail df5@-->|"Store Sent Email Data"| Database
+    SendEmail df6@-->|"Send Scheduled Email"| ScheduleEmail
+    ScheduleEmail df7@-->|"Process Scheduled Email"| Service
+    Database df8@-->|"Track Failed Emails"| TrackFailures
+    Database df10@-->|"Track Failed Emails"| TrackFailures
+
+    %% Data Stores
+    Database@{ shape: cyl }
+    FailureLog@{ shape: cyl }
+    CreateEmail@{ shape: rect }
+    SaveDraft@{ shape: rect }
+    ScheduleEmail@{ shape: rect }
+    SendEmail@{ shape: rect }
+    TrackFailures@{ shape: rect }
+    AuthService@{ shape: rect }
+    User@{ shape: cyl }
 
     %% Edge Animations
-    u1@{ animation: fast }
-    es1@{ animation: fast }
-    fl1@{ animation: fast }
-    p1@{ animation: fast }
+ edge1@{ animation: fast }
+  edge2@{ animation: fast }
+ edge3@{ animation: fast }
+    P1@{ animation: fast }
     p2@{ animation: fast }
     p3@{ animation: fast }
     p4@{ animation: fast }
     p5@{ animation: fast }
+    p6@{ animation: fast }
     df1@{ animation: fast }
     df2@{ animation: fast }
     df3@{ animation: fast }
     df4@{ animation: fast }
     df5@{ animation: fast }
     df6@{ animation: fast }
-    df9@{ animation: fast }
-
-    %% Shapes
-    Database@{ shape: cyl }
-    FailureLog@{ shape: cyl }
-    EmailService@{ shape: rect }
-    CreateEmail@{ shape: rect }
-    SaveDraft@{ shape: rect }
-    ScheduleEmail@{ shape: rect }
-    SendEmail@{ shape: rect }
-    TrackFailures@{ shape: rect }
-    User@{ shape: circle }
+    df7@{ animation: fast }
+    df8@{ animation: fast }
+    df10@{ animation: fast }
 
 ```
 ---
