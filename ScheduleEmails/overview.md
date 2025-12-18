@@ -79,8 +79,36 @@ AuthService edge3@--> P1
 
 ```
 ---
+## **Process Flow**
 
-## **Process Flow  (Process Flow Diagram)**
+1. **Create Email**  
+   - A user can compose a new email by specifying the recipients, subject, body, and attachments.
+   - The system validates the email content and saves it as a draft if required.
+
+2. **Save as Draft**  
+   - Emails can be saved as drafts for future editing. This allows users to complete their emails at a later time.
+
+3. **Schedule Email**  
+   - Users can schedule emails to be sent at a specified time in the future.
+   - Scheduled emails are stored in the database and processed by a background job to be sent at the scheduled time.
+
+4. **Send Email**  
+   - Emails are sent to the recipients via an integrated email service (SMTP or third-party service).
+   - The system tracks the email’s status (sent, failed, pending).
+
+5. **View Sent and Scheduled Emails**  
+   - Users can view their sent and scheduled emails in a list view.
+   - Emails can be filtered based on status (e.g., sent, failed, pending) and other criteria (e.g., recipient, subject).
+
+6. **Edit Email**  
+   - Users can edit drafts before sending them, including modifying the recipients, subject, or message body.
+
+7. **Email Failure Handling**  
+   - Failed email attempts are logged, and users are notified of any issues. The system retries sending emails that fail under certain conditions.
+
+---
+
+### **Process Flow Diagram**:
 ```mermaid
 ---
 config:
@@ -217,12 +245,64 @@ erDiagram
 
 ## **Entity Definitions**
 
-1. **Email**: Contains the details of an email message, including the sender, recipients (To, CC, BCC), subject, message body, attachments, and status.
-2. **User**: Represents users of the system, each with a specific role (Admin, Manager, Staff) that determines their access to email-related features.
-3. **Draft**: An email that is saved but not sent yet. It is stored temporarily and can be modified later before being sent.
-4. **Scheduled Email**: A scheduled email that is set to be sent at a later time. The system processes these emails and sends them at the scheduled time.
-5. **Sent Email**: Represents an email that has been successfully dispatched to recipients.
-6. **Failure Log**: Stores information about failed email attempts, such as the reason for failure, time of failure, and any error messages.
+### **User**
+Represents the system user interacting with emails.
+
+- **user_id** (string): Unique identifier for the user
+- **email_address** (string): User's email address
+- **name** (string): User's full name
+- **role** (string): User's role (ADMIN, MANAGER, STAFF)
+
+### **Email**
+Represents the email message.
+
+- **email_id** (string): Unique identifier for the email
+- **subject** (string): Email subject line
+- **body** (text): Email body content
+- **date** (datetime): Date and time the email was sent/received
+- **importance** (string): Priority level (Low, Normal, High)
+- **is_read** (boolean): Whether the email has been read
+- **folder_id** (string): Foreign key to the folder
+- **user_id** (string): Foreign key to the user
+
+### **Draft Email**
+Represents a saved but unsent email draft.
+
+- **draft_id** (string): Unique identifier for the draft email
+- **from_user_id** (string): Foreign key to the user sending the draft
+- **to** (string): Recipients of the draft email
+- **cc** (string): Carbon copy recipients
+- **bcc** (string): Blind carbon copy recipients
+- **subject** (string): Subject of the draft email
+- **message** (text): Content of the draft email
+- **draft_files** (string): List of files associated with the draft email
+
+### **Scheduled Email**
+Represents an email that is scheduled to be sent at a later time.
+
+- **schedule_id** (string): Unique identifier for the scheduled email
+- **from_user_id** (string): Foreign key to the user scheduling the email
+- **to** (string): Recipients of the scheduled email
+- **cc** (string): Carbon copy recipients
+- **bcc** (string): Blind carbon copy recipients
+- **subject** (string): Subject of the scheduled email
+- **schedule_datetime** (datetime): Date and time the email is scheduled to be sent
+- **status** (string): Status of the scheduled email (e.g., Pending, Sent, Failed)
+
+### **Failure Log**
+Stores information about failed email attempts.
+
+- **failure_id** (string): Unique identifier for the failure log
+- **email_id** (string): Foreign key to the email that failed
+- **failure_reason** (string): Reason for failure (e.g., "Server error", "Invalid email address")
+
+### **Email Thread**
+Represents a conversation thread of emails.
+
+- **thread_id** (string): Unique identifier for the email thread
+- **subject** (string): Subject of the email thread
+- **emails** (list): List of email messages in the thread, linked to the `USER_EMAIL` entity
+
 
 ---
 
