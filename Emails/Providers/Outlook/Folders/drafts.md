@@ -24,12 +24,20 @@ The **GetMessages** module is a backend service responsible for retrieving a pag
 
 ```mermaid
 flowchart LR
-    UI[Frontend UI] --> API[Email Controller]
-    API --> Service[GetMessages Service]
-    Service --> Graph[Microsoft Graph API]
-    Graph --> Service
-    Service --> API
-    API --> UI
+    UI[Frontend UI] edge1@--> API[Email Controller]
+    API edge2@--> Service[GetMessages Service]
+    Service edge3@--> Graph[Microsoft Graph API]
+    Graph edge4@--> Service
+    Service edge5@--> API
+    API edge6@--> UI
+
+    edge1@{ animate: fast }
+    edge2@{ animate: fast }
+    edge3@{ animate: fast }
+    edge4@{ animate: fast }
+    edge5@{ animate: fast }
+    edge6@{ animate: fast }
+
 ```
 
 ---
@@ -38,14 +46,23 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Start[Request Received] --> Params[Parse Query Parameters]
-    Params --> Filters[Build OData Filters]
-    Filters --> GraphCall[GraphServiceClient.Messages.Get]
-    GraphCall --> GraphResp[MessageCollectionResponse]
-    GraphResp --> ReplyCount[Fetch Reply Count per Conversation]
-    ReplyCount --> Normalize[Map to EmailsListItem]
-    Normalize --> Page[Build PagedData]
-    Page --> End[Return Response]
+    Start[Request Received] edge1@--> Params[Parse Query Parameters]
+    Params edge2@--> Filters[Build OData Filters]
+    Filters edge3@--> GraphCall[GraphServiceClient.Messages.Get]
+    GraphCall edge4@--> GraphResp[MessageCollectionResponse]
+    GraphResp edge5@--> ReplyCount[Fetch Reply Count per Conversation]
+    ReplyCount edge6@--> Normalize[Map to EmailsListItem]
+    Normalize edge7@--> Page[Build PagedData]
+    Page edge8@--> End[Return Response]
+
+    edge1@{ animate: fast }
+    edge2@{ animate: fast }
+    edge3@{ animate: fast }
+    edge4@{ animate: fast }
+    edge5@{ animate: fast }
+    edge6@{ animate: fast }
+    edge7@{ animate: fast }
+    edge8@{ animate: fast }
 ```
 
 ---
