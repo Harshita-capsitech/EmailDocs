@@ -23,43 +23,65 @@ The module provides several key features, such as:
 Here is the **Data Flow Diagram** illustrating the interaction between the user, system components, and the email service providers.
 
 ```mermaid
-flowchart LR
-    A([👤 User]) edge1@--> B[🖥️ User Interface]
-    B edge2@--> C["⚙️<a href='https://apiuat.actingoffice.com/api-docs/index.html'> Backend System</a>"]
-    C edge3@--> H["💾 Database"]
-    H edge4@--> C
-    H edge5@--> D{📧 Email Provider}
-    C edge6@--> D
-    D edge7@-->|Outlook| E["📬 Outlook API"]
-    D edge8@-->|Gmail| F["📮 Gmail API"]
-    E edge9@--> C
-    F edge10@--> C
-    C edge11@--> B
-    B edge12@--> G["🤖 <a href='https://ai.servicesuat.actingoffice.com/swagger/?urls.primaryName=Acting+Office+-+Convomail#/default/suggest_suggest_post'> AI Service API</a>"]
-    G edge13@--> B
-    
-    edge1@{ animate: fast }
-    edge2@{ animate: fast }
-    edge3@{ animate: fast }
-    edge4@{ animate: fast }
-    edge5@{ animate: fast }
-    edge6@{ animate: fast }
-    edge7@{ animate: fast }
-    edge8@{ animate: fast }
-    edge9@{ animate: fast }
-    edge10@{ animate: fast }
-    edge11@{ animate: fast }
-    edge12@{ animate: fast }
-    edge13@{ animate: fast }
-    
-    style A fill:#e3f2fd,stroke:#1976d2,stroke-width:4px,color:#000
-    style B fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
-    style C fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
-    style D fill:#fff9c4,stroke:#f57f17,stroke-width:3px,color:#000
-    style E fill:#e1f5fe,stroke:#0277bd,stroke-width:3px,color:#000
-    style F fill:#fce4ec,stroke:#c2185b,stroke-width:3px,color:#000
-    style G fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px,color:#000
-    style H fill:#fff8e1,stroke:#f9a825,stroke-width:3px,color:#000
+flowchart TD
+%% External Entity
+User[(User)]
+
+%% Authentication
+P1((Authenticate User))
+AuthService[Authentication Auth Service]
+
+%% Core System
+UI[User Interface]
+Backend["Backend System"]
+DB[(Database)]
+
+%% Email Providers
+EmailProvider{Email Provider}
+Outlook["Outlook API"]
+Gmail["Gmail API"]
+
+%% AI
+AI["AI Service API"]
+
+%% Flow
+User edge1@--> P1
+P1 edge2@--> AuthService
+AuthService edge3@--> P1
+P1 edge4@-->|Authenticated| UI
+
+UI edge5@--> Backend
+Backend edge6@--> DB
+DB edge7@--> Backend
+
+Backend edge8@--> EmailProvider
+EmailProvider edge9@-->|Outlook| Outlook
+EmailProvider edge10@-->|Gmail| Gmail
+Outlook edge11@--> Backend
+Gmail edge12@--> Backend
+
+Backend edge13@--> UI
+UI edge14@--> AI
+AI edge15@--> UI
+
+%% Animations
+edge1@{ animation: fast }
+edge2@{ animation: fast }
+edge3@{ animation: fast }
+edge4@{ animation: fast }
+edge5@{ animation: fast }
+edge6@{ animation: fast }
+edge7@{ animation: fast }
+edge8@{ animation: fast }
+edge9@{ animation: fast }
+edge10@{ animation: fast }
+edge11@{ animation: fast }
+edge12@{ animation: fast }
+edge13@{ animation: fast }
+edge14@{ animation: fast }
+edge15@{ animation: fast }
+
+
 ```
 
 ---
@@ -67,27 +89,24 @@ flowchart LR
 ## **Process Flow**
 
 ### **Description:**
-The process flow outlines the step-by-step operations within the Email Module. The flow provides a seamless user experience from selecting an email provider to composing and sending emails, managing drafts, and leveraging AI features to enhance communication.
+The process flow outlines the step-by-step operations within the Email Module. It provides a seamless user experience, from selecting an email provider to composing and sending emails, managing drafts, and leveraging AI features to enhance communication.
 
 1. **Email Provider Selection**:
-   - The system automatically determines the email service provider (either **Outlook** or **Gmail**) based on the **practice ID**. 
-   - The selected email provider enables users to access their respective email services, manage emails, and interact with system features such as sending and receiving emails.
-   
+   - The system automatically determines the email service provider (either **Outlook** or **Gmail**) based on the **practice ID**. The selected email provider enables users to access their respective email services, manage emails, and interact with system features such as sending and receiving emails.
+
 2. **Compose Email**:
    - The user navigates to the email composition screen where they can:
      - Set the **email importance** to **Low**, **Normal**, or **High**, ensuring that recipients understand the priority of the email.
      - Write the body content of the email, including formatting options (e.g., bold, italics, bullet points, etc.).
      - **Attach files** by selecting them from the local file system or by using a drag-and-drop interface.
      - Select recipients, including **To**, **CC**, and **BCC**.
-   
+
 3. **Email Sending**:
-   - Once the email is composed, the system sends it to the selected email provider’s API (either **Outlook** or **Gmail**), where it is processed and delivered to the recipients.
-   - The email is sent with all the composed content, attachments, and any additional metadata such as **importance** and **attachments**.
+   - Once the email is composed, the system sends it to the selected email provider’s API (either **Outlook** or **Gmail**), where it is processed and delivered to the recipients. The email is sent with all the composed content, attachments, and any additional metadata such as **importance** and **attachments**.
 
 4. **Drafts & Sent Items**:
-   - Emails that are not sent immediately are stored as **Drafts** within the **Drafts folder**. The user can access and edit the draft later before sending it.
-   - Once an email is successfully sent, it is moved to the **Sent Items** folder, allowing the user to track emails that have been sent.
-   
+   - Emails that are not sent immediately are stored as **Drafts** within the **Drafts folder**. The user can access and edit the draft later before sending it. Once an email is successfully sent, it is moved to the **Sent Items** folder, allowing the user to track emails that have been sent.
+
 5. **AI Features**:
    - When viewing an email, the user can take advantage of AI-based features that assist in understanding and responding to the message:
      - **Auto Response**: AI suggests a suitable reply based on the content of the received email, saving time for routine responses.
@@ -101,84 +120,91 @@ The process flow outlines the step-by-step operations within the Email Module. T
 
 ```mermaid
 flowchart TD
-    A([🚀 Start]) edge1@--> B{📧 Email Provider}
-    B edge2@-->|Outlook| C[📬 Outlook Email API]
-    B edge3@-->|Gmail| D[📮 Gmail Email API]
-    C edge4@--> E[✍️ Compose Email]
-    D edge5@--> E
-    E edge6@--> O[🤖 AI Features Available]
-    O edge20@--> P[🌐 Translation]
-    O edge21@--> Q[📝 Summarization]
-    O edge22@--> R[💬 Auto Response]
-    O edge23@--> S[✨ Short Replies]
-    P edge24@--> F[📝 Set Email Properties]
-    Q edge25@--> F
-    R edge26@--> F
-    S edge27@--> F
-    E edge28@-->|Skip AI| F
-    F edge7@--> G[⚡ Set Importance]
-    F edge8@--> H[💬 Write Content]
-    F edge9@--> I[📎 Attach Files]
-    F edge10@--> J[👥 Select Recipients]
-    G edge11@--> K{📤 Send Email?}
-    H edge12@--> K
-    I edge13@--> K
-    J edge14@--> K
-    K edge15@-->|Send| L[🚀 Send to Email Provider API]
-    K edge16@-->|Save Draft| M[💾 Move to Drafts]
-    L edge17@--> N[📨 Move to Sent Items]
-    M edge18@-->|Edit| E
-    N edge19@--> T([✅ End])
-    
-    edge1@{ animate: fast }
-    edge2@{ animate: fast }
-    edge3@{ animate: fast }
-    edge4@{ animate: fast }
-    edge5@{ animate: fast }
-    edge6@{ animate: fast }
-    edge7@{ animate: fast }
-    edge8@{ animate: fast }
-    edge9@{ animate: fast }
-    edge10@{ animate: fast }
-    edge11@{ animate: fast }
-    edge12@{ animate: fast }
-    edge13@{ animate: fast }
-    edge14@{ animate: fast }
-    edge15@{ animate: fast }
-    edge16@{ animate: fast }
-    edge17@{ animate: fast }
-    edge18@{ animate: fast }
-    edge19@{ animate: fast }
-    edge20@{ animate: fast }
-    edge21@{ animate: fast }
-    edge22@{ animate: fast }
-    edge23@{ animate: fast }
-    edge24@{ animate: fast }
-    edge25@{ animate: fast }
-    edge26@{ animate: fast }
-    edge27@{ animate: fast }
-    edge28@{ animate: fast }
-    
-    style A fill:#e3f2fd,stroke:#1976d2,stroke-width:4px,color:#000
-    style B fill:#fff9c4,stroke:#f57f17,stroke-width:3px,color:#000
-    style C fill:#e1f5fe,stroke:#0277bd,stroke-width:3px,color:#000
-    style D fill:#fce4ec,stroke:#c2185b,stroke-width:3px,color:#000
-    style E fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
-    style F fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
-    style G fill:#ffe0b2,stroke:#ef6c00,stroke-width:2px,color:#000
-    style H fill:#ffccbc,stroke:#bf360c,stroke-width:2px,color:#000
-    style I fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
-    style J fill:#f8bbd0,stroke:#880e4f,stroke-width:2px,color:#000
-    style K fill:#fff9c4,stroke:#f9a825,stroke-width:3px,color:#000
-    style L fill:#e8f5e9,stroke:#43a047,stroke-width:3px,color:#000
-    style M fill:#fff8e1,stroke:#f9a825,stroke-width:3px,color:#000
-    style N fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px,color:#000
-    style O fill:#b2ebf2,stroke:#006064,stroke-width:3px,color:#000
-    style P fill:#e1bee7,stroke:#6a1b9a,stroke-width:2px,color:#000
-    style Q fill:#f8bbd0,stroke:#880e4f,stroke-width:2px,color:#000
-    style R fill:#dcedc8,stroke:#33691e,stroke-width:2px,color:#000
-    style S fill:#ffe0b2,stroke:#e65100,stroke-width:2px,color:#000
-    style T fill:#c8e6c9,stroke:#2e7d32,stroke-width:4px,color:#000
+%% ========== User & Authentication ==========
+User[(User)]
+Login([Login])
+AuthProcess((Authenticate User))
+AuthService[Authentication Service]
+AuthCheck{Authenticated?}
+
+User edge1@--> Login
+Login edge2@--> AuthProcess
+AuthProcess edge3@--> AuthService
+AuthService edge4@--> AuthProcess
+AuthProcess edge5@--> AuthCheck
+
+AuthCheck edge6@-- No --> Login
+
+%% ========== Provider Selection ==========
+AuthCheck edge7@-- Yes --> Provider{Email Provider}
+Provider edge8@-- Outlook --> OutlookRoute[Outlook]
+Provider edge9@-- Gmail --> GmailRoute[Gmail]
+
+%% ========== Mailbox & Folders ==========
+OutlookRoute edge10@--> Mailbox[Mailbox]
+GmailRoute edge11@--> Mailbox
+
+Mailbox edge12@--> Folders[Folders<br/>Inbox, Sent, Drafts, Trash]
+
+%% ========== Compose Email ==========
+Folders edge13@--> Compose[Compose Email]
+Compose edge14@--> Editor[Content Editor]
+Editor edge15@--> Recipients[Recipients & Priority]
+Recipients edge16@--> Attachments[Attachments]
+Attachments edge17@--> SendAction[Send / Save Draft]
+SendAction edge18@--> Folders
+
+%% ========== Read Emails ==========
+Folders edge19@--> EmailList[Email List]
+EmailList edge20@--> EmailDetail[Email Detail]
+
+%% ========== Email Actions ==========
+EmailDetail edge21@--> Actions[Email Actions]
+Actions edge22@--> Reply[Reply / Reply All / Forward]
+Actions edge23@--> Delete[Delete / Move]
+
+Reply edge24@--> Editor
+Delete edge25@--> Folders
+
+%% ========== AI Features ==========
+EmailDetail edge26@--> AI[AI Assistance]
+AI edge27@--> Summary[Summarize]
+AI edge28@--> Translate[Translate]
+AI edge29@--> SmartReply[Smart Reply]
+
+%% ========== Animations ==========
+edge1@{ animation: fast }
+edge2@{ animation: fast }
+edge3@{ animation: fast }
+edge4@{ animation: fast }
+edge5@{ animation: fast }
+edge6@{ animation: fast }
+edge7@{ animation: fast }
+edge8@{ animation: fast }
+edge9@{ animation: fast }
+edge10@{ animation: fast }
+edge11@{ animation: fast }
+edge12@{ animation: fast }
+edge13@{ animation: fast }
+edge14@{ animation: fast }
+edge15@{ animation: fast }
+edge16@{ animation: fast }
+edge17@{ animation: fast }
+edge18@{ animation: fast }
+edge19@{ animation: fast }
+edge20@{ animation: fast }
+edge21@{ animation: fast }
+edge22@{ animation: fast }
+edge23@{ animation: fast }
+edge24@{ animation: fast }
+edge25@{ animation: fast }
+edge26@{ animation: fast }
+edge27@{ animation: fast }
+edge28@{ animation: fast }
+edge29@{ animation: fast }
+
+
+
 ```
 ---
 
@@ -272,50 +298,40 @@ Represents email folders.
 
 
 
-## Authentication / APIs
+# API Endpoints Documentation
 
-The email module supports both **Outlook** and **Gmail** authentication, with APIs to manage email composition and  attachment uploads
+## **API Endpoints:**
 
-### **API Endpoints:**
-
-#### **Update Email Preferences**
-
-```
-POST /admin/emails/preferences
-```
-
-
-#### **Get Inbox Emails**
-```
-GET /Emails/Inbox
-```
-
-
-#### **Send Email**
-```
-POST /Emails/Message/{id}/send
-POST /Emails/Message/send
-
-```
-
-
-#### **Get Email Details**
-```
-GET /Emails/Message/{id}
-```
-
-
-#### **Upload Attachment**
-```
-POST /Emails/Message/{messageId}/Attachments
-
-```
+| **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
+|------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
+| **Update Email Preferences**       | POST                          | [/admin/emails/preferences](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Inbox Emails**               | GET                           | [/Emails/Inbox](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Send Email**                     | POST                          | [/Emails/Message/{id}/send](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Send Email**                     | POST                          | [/Emails/Message/send](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Email Details**              | GET                           | [/Emails/Message/{id}](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Upload Attachment**              | POST                          | [/Emails/Message/{messageId}/Attachments](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Upload Attachment In Chunks**    | POST                          | [/Message/{messageId}/Attachments/UploadSession](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Upload Attachment In Chunks**    | PUT                           | [/Attachments/UploadSession/{sessionId}/Chunk](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Upload Attachment In Chunks**    | GET                           | [/Attachments/UploadSession/{sessionId}/Status](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Download Attachment**            | GET                           | [/Message/{messageId}/Attachment/{attachmentId}/Download](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Download All Attachments**       | GET                           | [/Message/{messageId}/Attachment/DownloadAll](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Delete Attachment**              | DELETE                        | [/Message/{messageId}/Attachment/{attachmentId}/Delete](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Parse MIME Message**             | POST                          | [/ParseMIME](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Create Attachment Upload Session**| POST                          | [/Message/{messageId}/Attachments/UploadSession](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Upload Attachment Chunk**        | PUT                           | [/Attachments/UploadSession/{sessionId}/Chunk](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Attachment Upload Status**   | GET                           | [/Attachments/UploadSession/{sessionId}/Status](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Move Message**                   | GET                           | [/Move](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Delete Message**                 | GET                           | [/Message/{id}/Delete](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Categories**                 | GET                           | [/Categories](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Schedule Email**                 | POST                          | [/ScheduleEmails](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Scheduled Emails**           | GET                           | [/ScheduleEmails](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Email Folders**              | GET                           | [/Folders](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Create Folder**                  | POST                          | [/Folders](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
+| **Get Users**                      | GET                           | [/Users](https://emails.servicesuat.actingoffice.com/swagger/index.html) |
 
 
-#### **Download Attachment**
-```
-GET /admin/emails/{id}/attachment/{attachmentId}/Download
-```
+
+
 
 ---
 
