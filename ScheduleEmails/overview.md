@@ -227,7 +227,7 @@ erDiagram
 
 | **Description**                         | **HTTP Method** | **Endpoint**                                                                 |
 |-----------------------------------------|-----------------|-----------------------------------------------------------------------------|
-| **Send Email**                          | POST            | [/SendEmail](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)) |
+| **Send Email**                          | POST            | [/SendEmail](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 | **Get Canned Messages**                 | GET             | [/CannedMessages](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 | **Add New Draft**                       | POST            | [/SaveDraft](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 | **Update Draft**                        | POST            | [/SaveDraft/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
