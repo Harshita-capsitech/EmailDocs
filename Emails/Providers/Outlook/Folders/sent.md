@@ -27,13 +27,20 @@ The **Data Flow Diagram (DFD)** visually represents how email data flows between
 
 ```mermaid
 flowchart TD
-    A[User] --> B[Login]
-    B --> C[Fetch Folders]
-    C --> D[Fetch Emails]
-    D --> E[Display Emails]
-    E --> F[User Action]
-    F --> G[Update Email]
-    G --> E
+    A[User] edge1@--> B[Login]
+    B edge2@--> C[Fetch Folders]
+    C edge3@--> D[Fetch Emails]
+    D edge4@--> E[Display Emails]
+    E edge5@--> F[User Action]
+    F edge6@--> G[Update Email]
+    G edge7@--> E
+    edge1@{ animate: fast }
+    edge2@{ animate: fast }
+    edge3@{ animate: fast }
+    edge4@{ animate: fast }
+    edge5@{ animate: fast }
+    edge6@{ animate: fast }
+    edge7@{ animate: fast }
 
 ```
 
@@ -155,4 +162,3 @@ For detailed API documentation, please refer to the following link:
 - **Email Display**: Ensure that emails are correctly displayed in the UI with options for sorting, filtering, and searching.
 - **Action Verification**: Verify that user actions (e.g., marking emails as read) are reflected in the UI.
 
----
