@@ -4,20 +4,41 @@
 
 This document outlines the implementation of the **Modules Report** feature. The feature allows fetching and displaying user-wise module data (such as Tax, Payroll, Accounts, etc.) for a specified period. It includes filtering, sorting, and paging functionality, using **TimesheetService** for backend interaction and React components for frontend display.
 
----
+**Key Features:**
+- User-wise time tracking across modules
+- Date range filtering (default: current month)
+- Team-based filtering
+- Sortable columns
+- Drill-down capability to view detailed page views
+- Total time aggregation
+
 
 ## DFD (Data Flow Diagram)
 
-### Level 1 DFD
-
 ```mermaid
-  graph TD
-    A[User Interface] --> B[ModulesReport Component]
-    B --> C[Backend API]
-    C --> D[Database]
-    D --> C
-    C --> B
-    B --> A
+flowchart TD
+    %% Nodes
+    user["Admin / User"]
+    modules["ModulesReport Component<br>- Manages state & filters<br>- Renders CommandBar & PagingList"]
+    timesheet["TimesheetService<br>- Routes to backend API"]
+    controller["PageViewsController<br>- Validates filters<br>- Builds MongoDB query"]
+    db@{ shape: cyl, label: "MongoDB<br>PageViews Collection" }
+    logic["User Enrichment Logic<br>- Fetches user names<br>- Post-filter, sort, totals"]
+    frontend["Frontend Rendering<br>- Table, links, formatted times"]
+
+    %% Animated arrows
+    user e1@-->|"1. Request Report<br/>(filters: date, team)"|modules
+    e1@{ animate: true, animation: fast }
+    modules e2@-->|"2. API Call<br>getModuleReport()"|timesheet
+    e2@{ animate: true, animation: fast }
+    timesheet e3@-->|"3. HTTP GET<br>/modulereport"|controller
+    e3@{ animate: true, animation: fast }
+    controller e4@-->|"4. Aggregate Query"|db
+    e4@{ animate: true, animation: fast }
+    db e5@-->|"5. Raw Results"|logic
+    e5@{ animate: true, animation: fast }
+    logic e6@-->|"6. Formatted Response"|frontend
+    e6@{ animate: true, animation: fast }
 ```
 
 ### DFD Explanation:
@@ -116,13 +137,9 @@ erDiagram
 The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access. The backend is protected using role-based access control (RBAC) with the `[Authorize]` attribute.
 
 ### API Endpoints
-
 | **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
 |------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
-| **Get Teams Report List**          | GET                           | [/TeamsReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
-| **Get Team Report (Members)**      | GET                           | [/teamsreport/{teamId}/TeamReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
-
-
+| **Get Module Report **          | GET                           | [/ModuleReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
 ---
 
