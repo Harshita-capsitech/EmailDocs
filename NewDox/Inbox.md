@@ -284,115 +284,11 @@ graph LR
 
 **Note:** Email Module routes through Acting Office Email Service for real-time operations.
 
-### 3.5 Token Refresh & Error Handling
-
-```mermaid
-flowchart TD
-
-    %% ───────────── Phase 1 : Request Entry ─────────────
-    subgraph Phase1["Request Validation"]
-        A[API Request] edge1@--> B{Token Valid}
-    end
-
-    %% ───────────── Phase 2 : Token Handling ─────────────
-    subgraph Phase2["Token Handling"]
-        B edge2@-->|Yes| C[Execute Request]
-        B edge3@-->|No| D{Refresh Available}
-
-        D edge4@-->|Yes| E[Refresh Token]
-        E edge5@--> F{Refresh Success}
-
-        F edge6@-->|Yes| C
-        F edge7@-->|No| G[Need Approval]
-
-        D edge8@-->|No| G
-    end
-
-    %% ───────────── Phase 3 : User Action ─────────────
-    subgraph Phase3["User Re-Link Flow"]
-        G edge9@--> H[Send Notification]
-        H edge10@--> I[User Re Link]
-    end
-
-    %% ───────────── Phase 4 : Execution Result ─────────────
-    subgraph Phase4["Request Result"]
-        C edge11@--> J{Request Success}
-        J edge12@-->|Yes| K[Return Data]
-        J edge13@-->|No| L{Error Type}
-
-        L edge14@-->|Auth Error| G
-        L edge15@-->|Other Error| M[Return Error]
-    end
-
-    %% ───────────── Animations ─────────────
-    edge1@{ animate: fast }
-    edge2@{ animate: fast }
-    edge3@{ animate: fast }
-    edge4@{ animate: fast }
-    edge5@{ animate: fast }
-    edge6@{ animate: fast }
-    edge7@{ animate: fast }
-    edge8@{ animate: fast }
-    edge9@{ animate: fast }
-    edge10@{ animate: fast }
-    edge11@{ animate: fast }
-    edge12@{ animate: fast }
-    edge13@{ animate: fast }
-    edge14@{ animate: fast }
-    edge15@{ animate: fast }
-```
-
-**Token Management Strategy:**
-- Automatic token validation before each request
-- Proactive refresh before expiration (8-minute buffer for Google)
-- User notification sent when re-authorization required
-- Failed operations queued for retry after re-linking
-
----
 
 ## 4. ER Diagram
 
-### 4.1 Core Entity Relationships
 
-```mermaid
-erDiagram
-    USER {
-        string user_id
-        string email_address
-        string name
-        string role
-    }
-    EMAIL {
-        string email_id
-        string subject
-        string body
-        datetime date
-        string importance
-        boolean is_read
-        string folder_id
-        string user_id
-    }
-    ATTACHMENT {
-        string attachment_id
-        string email_id
-        string file_name
-        string content_type
-        int size
-    }
-    FOLDER {
-        string folder_id
-        string display_name
-        int message_count
-        string user_id
-    }
-
-    USER ||--o| EMAIL : has
-    EMAIL ||--o| ATTACHMENT : contains
-    EMAIL ||--|{ FOLDER : belongs_to
-    USER ||--o| FOLDER : has
-```
-
-### 4.2 Extended Entity Relationships with Provider Tokens
+###  Extended Entity Relationships with Provider Tokens
 
 ```mermaid
 erDiagram
@@ -451,64 +347,7 @@ erDiagram
 
 ## 5. Entity Definition
 
-### 5.1 User
-
-Represents the system user interacting with emails.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `user_id` | string | Unique identifier for the user |
-| `email_address` | string | User's email address |
-| `name` | string | User's full name |
-| `role` | string | User's role (ADMIN, MANAGER, STAFF) |
-
-**Purpose:** Stores user information for authentication and email management.
-
-### 5.2 Email
-
-Represents the email message.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `email_id` | string | Unique identifier for the email |
-| `subject` | string | Email subject line |
-| `body` | text | Email body content |
-| `date` | datetime | Date and time the email was sent/received |
-| `importance` | string | Priority level (Low, Normal, High) |
-| `is_read` | boolean | Whether the email has been read |
-| `folder_id` | string | Foreign key to the folder |
-| `user_id` | string | Foreign key to the user |
-
-**Purpose:** Stores email message data and metadata.
-
-### 5.3 Attachment
-
-Represents an attachment in an email.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `attachment_id` | string | Unique identifier for the attachment |
-| `email_id` | string | Foreign key to the email |
-| `file_name` | string | Name of the attached file |
-| `content_type` | string | MIME type of the file |
-| `size` | int | File size in bytes |
-
-**Purpose:** Stores email attachment information and metadata.
-
-### 5.4 Folder
-
-Represents email folders.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `folder_id` | string | Unique identifier for the folder |
-| `display_name` | string | Name of the folder (Inbox, Sent, Drafts, etc.) |
-| `message_count` | int | Number of messages in the folder |
-| `user_id` | string | Foreign key to the user |
-
-**Purpose:** Organizes emails into different categories and folders.
-
-### 5.5 ApplicationUserAccessTokens
+### 5.1 ApplicationUserAccessTokens
 
 Stores authentication tokens and provider-specific credentials for users.
 
@@ -530,7 +369,7 @@ Stores authentication tokens and provider-specific credentials for users.
 
 **Purpose:** Central storage for OAuth tokens and provider-specific authentication data.
 
-### 5.6 UserMicrosoftAccessToken
+### 5.2 UserMicrosoftAccessToken
 
 Stores Microsoft-specific authentication and subscription data.
 
@@ -549,7 +388,7 @@ Stores Microsoft-specific authentication and subscription data.
 
 **Purpose:** Manages Microsoft Graph API authentication and webhook subscriptions.
 
-### 5.7 UserGoogleAccessToken
+### 5.3 UserGoogleAccessToken
 
 Stores Google-specific authentication and authorization data used for Gmail integration.
 
@@ -567,7 +406,7 @@ Stores Google-specific authentication and authorization data used for Gmail inte
 
 **Purpose:** Manages Gmail API authentication using OAuth 2.0. This entity stores all Google-specific token metadata required to securely access Gmail APIs, handle token refresh cycles, and track authentication failures in alignment with the system's email provider abstraction.
 
-### 5.8 ApplicationPractices
+### 5.4 ApplicationPractices
 
 Stores practice-level configuration.
 
@@ -584,7 +423,7 @@ Stores practice-level configuration.
 
 **Purpose:** Organization/tenant configuration and settings.
 
-### 5.9 Enumerations
+### 5.5 Enumerations
 
 #### ApplicationEmailServiceProviders
 - `Gmail = 0`
