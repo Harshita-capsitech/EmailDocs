@@ -1,17 +1,5 @@
 # Emails Module Documentation
 
-## Table of Contents
-1. [Overview](#1-overview)
-2. [Data Flow Diagram (DFD)](#2-data-flow-diagram-dfd)
-3. [Process Flow](#3-process-flow)
-4. [ER Diagram](#4-er-diagram)
-5. [Entity Definition](#5-entity-definition)
-6. [Authentication / APIs](#6-authentication--apis)
-7. [Testing Guide](#7-testing-guide)
-8. [References](#8-references)
-
----
-
 ## 1. Overview
 
 ### 1.1 Module Introduction
@@ -56,70 +44,7 @@ The module provides several key features, such as:
 
 ## 2. Data Flow Diagram (DFD)
 
-### 2.1 Level 0 - Context Diagram
-
-```mermaid
-flowchart TD
-    %% External Entity
-    User[(User)]
-    
-    %% Authentication
-    P1((Authenticate User))
-    AuthService[Authentication Auth Service]
-    
-    %% Core System
-    UI[User Interface]
-    Backend["Backend System"]
-    DB[(Database)]
-    
-    %% Email Providers
-    EmailProvider{Email Provider}
-    Outlook["Outlook API"]
-    Gmail["Gmail API"]
-    
-    %% AI
-    AI["AI Service API"]
-    
-    %% Flow
-    User edge1@--> P1
-    P1 edge2@--> AuthService
-    AuthService edge3@--> P1
-    P1 edge4@-->|Authenticated| UI
-    UI edge5@--> Backend
-    Backend edge6@--> DB
-    DB edge7@--> Backend
-    Backend edge8@--> EmailProvider
-    EmailProvider edge9@-->|Outlook| Outlook
-    EmailProvider edge10@-->|Gmail| Gmail
-    Outlook edge11@--> Backend
-    Gmail edge12@--> Backend
-    Backend edge13@--> UI
-    UI edge14@--> AI
-    AI edge15@--> UI
-    
-    %% Animations
-    edge1@{ animation: fast }
-    edge2@{ animation: fast }
-    edge3@{ animation: fast }
-    edge4@{ animation: fast }
-    edge5@{ animation: fast }
-    edge6@{ animation: fast }
-    edge7@{ animation: fast }
-    edge8@{ animation: fast }
-    edge9@{ animation: fast }
-    edge10@{ animation: fast }
-    edge11@{ animation: fast }
-    edge12@{ animation: fast }
-    edge13@{ animation: fast }
-    edge14@{ animation: fast }
-    edge15@{ animation: fast }
-    
-    %% Links
-    click Backend "https://apiuat.actingoffice.com/api-docs/index.html" "Backend API Documentation"
-    click AI "https://ai.servicesuat.actingoffice.com/swagger/?urls.primaryName=Acting+Office+-+Convomail#/default/suggest_suggest_post" "AI Service API Documentation"
-```
-
-### 2.2 Level 1 - Email Module Data Flow
+### Email Module Data Flow
 
 ```mermaid
 graph LR
