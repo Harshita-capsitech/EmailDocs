@@ -232,6 +232,8 @@ erDiagram
 
 - **Role-Based Access Control (RBAC)**: The **Email Module** uses RBAC for authentication and authorization. Access to this module is restricted using `[Authorize(Roles = "ADMIN,MANAGER,STAFF")]`, ensuring that only users with **ADMIN**, **MANAGER**, or **STAFF** roles can access it.
 
+
+### **API Endpoints**
   
 | **Description**                          | **HTTP Method** | **Endpoint URL**                                                                 |
 |------------------------------------------|-----------------|----------------------------------------------------------------------------------|
@@ -253,10 +255,11 @@ erDiagram
 ---
 
 ## References
-- **EmailService**: Core service that interacts with Gmail, Outlook, and other external email APIs.
-- **OAuth Authentication**: OAuth 2.0 for secure email service access.
+- [Microsoft Authentication Documentation](https://learn.microsoft.com/en-us/azure/active-directory/develop/)
+- [Google OAuth Documentation](https://developers.google.com/identity/protocols/oauth2)
 
 ---
+
 
 
 
