@@ -420,15 +420,12 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
      - Ensure that the `CommunicationOverview` component accurately reflects call data (incoming, outgoing) for the selected date range.
      - Verify that the `ReviewsCard` displays review statistics (total reviews, accepted, pending, rejected) correctly.
      
----
-
-##  References
-
 ## **References**
 
 - **API Documentation**: [Link to AO API documentation].
 
 ---
+
 
 
 
