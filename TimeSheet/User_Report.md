@@ -9,6 +9,9 @@ This document covers:
 - **Frontend Implementation**: Components to display user reports interactively in the admin dashboard.
 
 ## DFD (Data Flow Diagram)
+
+The Data Flow Diagram (DFD) illustrates the interaction between the Admin User, Frontend UI, Backend API, and User Report Data.
+
 ```mermaid
 flowchart TD
     AdminUser["Admin User"]
@@ -21,13 +24,28 @@ flowchart TD
     API --> UserReport
 ```
 
-## Process Flow
+# Process Flow for User Report Display
+
+### Description of the Process Flow
+
+This process flow describes how an Admin or Manager interacts with the dashboard to view team or member reports. The steps in this process are as follows:
+
+1. **Start**: The process begins when the Admin or Manager starts the interaction.
+2. **Admin Selects User & Filters**: The Admin or Manager selects a user and applies filters (e.g., date range, team, etc.) to narrow down the data.
+3. **Frontend Calls Backend API**: Once the user is selected and the filters are applied, the frontend sends a request to the backend API to retrieve the data.
+4. **Backend Aggregates & Filters Data**: The backend processes the data according to the applied filters, aggregates it based on the user session, and prepares it for display.
+5. **Backend Sends Report Data**: After the data is aggregated and filtered, the backend sends the report data back to the frontend.
+6. **Dashboard Displays Report**: The frontend receives the data and displays the team or member report in a visual format on the dashboard.
+7. **End**: The process ends when the report is displayed successfully to the Admin or Manager.
+
+### Process Flow Diagram
+
 ```mermaid
 ---
 config:
   layout: dagre
 ---
-flowchart LR
+flowchart TB
     Start["Start"] e1@-.-> Select["Admin selects user & filters"]
     Select e2@-.- APICall["Frontend calls Backend API"]
     APICall e3@-.- Aggregate["Backend aggregates & filters data"]
@@ -44,6 +62,7 @@ flowchart LR
     e4@{ animate: true } 
     e5@{ animate: true } 
     e6@{ animate: true }
+
 ```
 
 ## ER Diagram
@@ -92,31 +111,17 @@ erDiagram
 - **Report**: Contains the aggregated report data for each user, including hours spent across various modules like Tax and Accounts, Payroll, CRM, etc.
 - **Activity**: Represents individual activities by the user, such as time spent on different application modules.
 
-### Frontend API Call:
-- **Route**: `/userreport`
-- **Method**: `GET`
-- **Parameters**:
-  - `start`: Pagination start index
-  - `length`: Pagination length (number of items per page)
-  - `search`: Optional search keyword
-  - `sortCol`: Column name to sort by (optional)
-  - `sortDir`: Sorting direction (`asc` or `desc`) (optional)
-  - `fromDate`: Start date for the report (optional)
-  - `toDate`: End date for the report (optional)
-  - `userId`: User identifier (optional)
+## Authentication / APIs
 
-### Backend Method:
-- **Route**: `/userreport`
-- **Method**: `GET`
-- **Parameters**:
-  - `userId`: The ID of the user for the report
-  - `start`: Start index for pagination (optional)
-  - `length`: Number of items per page (optional)
-  - `sortCol`: The column to sort by (optional)
-  - `sortDir`: Sorting direction (`asc` or `desc`) (optional)
-  - `fromDate`: Start date for filtering reports (optional)
-  - `toDate`: End date for filtering reports (optional)
-  - `isWeekendIncluded`: Boolean flag to include/exclude weekends in the report (optional)
+### Authentication
+The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access. The backend is protected using role-based access control (RBAC) with the `[Authorize]` attribute.
+
+### API Endpoints
+
+| **Description**                   | **HTTP Method**   | **Endpoint**                                                                 |
+|-----------------------------------|-------------------|-----------------------------------------------------------------------------|
+| **Get User Report**     | GET               | [/userreport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+
 
 
 ## Testing Guide
