@@ -422,7 +422,9 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
      
 ## **References**
 
-- **API Documentation**: [Link to AO API documentation].
+- **[API Documentation](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)**
+
+
 
 
 
