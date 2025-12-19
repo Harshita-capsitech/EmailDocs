@@ -5,41 +5,19 @@
 
 ## 1. Overview
 
-The Voice Recording module provides a secure mechanism for collecting a user’s voice sample. It is integrated into the Profile section and ensures clear separation of concerns between the UI, voice sample collection, and backend persistence.
+The **Voice Recording Module** is designed to securely collect and store a user’s voice sample by recording it and saving the data in blob storage. This module is integrated into the Profile section and focuses exclusively on the collection of voice samples, without involvement in authentication or verification processes.
 
-### Goals
-- Collect voice samples for further verification or processing
-- Prevent storage of raw biometric data in core systems
-- Provide clear auditability of sample collection status
-- Ensure extensibility for future workflows involving voice data
+The primary objectives of the module are:
+- **Voice Sample Collection**: The module enables users to record their voice, which is then securely captured and stored.
+- **Blob Storage**: Once recorded, the voice sample is uploaded and stored in blob storage, ensuring the safety and scalability of the data.
+- **Minimal Data Retention**: The system ensures that only necessary metadata (such as the status of the sample) is retained in the database, avoiding the long-term storage of raw voice data.
+- **Privacy and Security**: The module maintains strict privacy controls by isolating the voice sample collection process from core authentication or verification services.
 
-### Non-Goals
-- Voice authentication or verification at login time
-- Long-term storage of voice samples
-- Multi-factor biometric comparison
+By focusing solely on the collection and secure storage of voice data, the module provides a simple and efficient mechanism for gathering voice samples, which can later be used for various processing needs, while prioritizing user privacy and data security.
 
 ---
 
-## 2. Architecture Summary
-
-The module is composed of three logical layers:
-
-### Presentation Layer
-- VoiceRecordingModal
-- Profile UI
-
-### Collection Layer
-- Audio capture service (/sample)
-
-### Persistence Layer
-- AuthController.UploadAudio
-- MongoDB (ApplicationUser collection)
-
-This layered approach ensures that biometric data does not leak into core authentication services.
-
----
-
-## 3. DFD (Data Flow Diagram)
+## 2. Data Flow Diagram (DFD)
 
 ```mermaid
 %%{ init: { "themeVariables": { "background": "transparent" } } }%%
@@ -99,7 +77,7 @@ flowchart LR
 
 ---
 
-## 4. Process Flow
+## 3. Process Flow
 
 ```mermaid
 sequenceDiagram
@@ -124,7 +102,7 @@ sequenceDiagram
 
 ---
 
-## 5. ER Diagram
+## 4. Entity Relationship (ER) Diagram
 
 ```mermaid
 erDiagram
@@ -152,7 +130,7 @@ erDiagram
 
 ---
 
-## 6. Entity Definition
+## 5. Entity Definition
 
 ### ApplicationUserVoiceStatus
 
@@ -166,63 +144,31 @@ This structure is intentionally minimal to reduce biometric footprint.
 
 ---
 
-## 7. Authentication and APIs
+## 6. Authentication and APIs
 
 ### Frontend APIs (ProfileService)
 
-checkAudio
-- Endpoint: /sample
-- Method: POST
-- Payload: multipart/form-data
-- Responsibility: AI-based audio sample processing
+## **API Endpoints:**
 
-uploadAudio
-- Endpoint: /Auth/UploadAudio
-- Method: POST
-- Payload: boolean
-- Responsibility: Persist voice sample collection result
-
----
-
-### Backend API (AuthController)
-
-POST /Auth/UploadAudio
-
-Behavior:
-1. Validates authenticated user
-2. Filters MongoDB document using PracticeId and UserId
-3. Updates user.voice.recorded and user.voice.on
-
-No raw audio is stored or processed at this layer.
+| **Description**                               | **HTTP Method** | **Endpoint**                                                                 |
+|-----------------------------------------------|-----------------|-----------------------------------------------------------------------------|
+| **Check Audio**                               | POST            | [/sample](https://localhost:5004/api-docs/index.html)                                                                  |
+| **Upload Audio Sample**                       | POST            | [/Auth/UploadAudio](https://localhost:5004/api-docs/index.html)                                                       |
+| **Voice Sample Collection**                   | POST            | [/sample](https://localhost:5004/api-docs/index.html)                                                                  |
+| **Upload Audio Sample**                       | POST            | [/auth/uploadAudio](https://localhost:5004/api-docs/index.html)                                                       |
+| **Get Profile Information**                   | GET             | [/profile](https://localhost:5004/api-docs/index.html)                                                                |
+| **Update Profile Information**                | PUT             | [/profile/update](https://localhost:5004/api-docs/index.html)                                                         |
+| **Get Audio Sample Status**                   | GET             | [/sample/status](https://localhost:5004/api-docs/index.html)                                                          |
+| **Delete Audio Sample**                       | DELETE          | [/sample/delete](https://localhost:5004/api-docs/index.html)                                                          |
+| **Get Audio Sample Details**                  | GET             | [/sample/{id}](https://localhost:5004/api-docs/index.html)                                                            |
+| **Upload Audio Sample Metadata**              | POST            | [/metadata/upload](https://localhost:5004/api-docs/index.html)                                                        |
+| **Create New Audio Sample Session**           | POST            | [/sample/session/create](https://localhost:5004/api-docs/index.html)                                                  |
+| **Check Audio Sample Upload Status**          | GET             | [/sample/session/status/{sessionId}](https://localhost:5004/api-docs/index.html)                                       |
+| **Cancel Audio Sample Session**               | DELETE          | [/sample/session/cancel/{sessionId}](https://localhost:5004/api-docs/index.html)                                       |
 
 ---
 
-## 8. Security Considerations
-
-- Raw audio never reaches AuthController
-- Audio collection service is isolated and accessed via OIDC
-- Voice status is boolean, not biometric data
-- MongoDB stores metadata only
-- Browser permissions strictly enforced
-
----
-
-## 9. Error Handling and Recovery
-
-Frontend:
-- Permission denial handling
-- Unsupported browser detection
-- Silent audio detection
-- Retry and re-record support
-
-Backend:
-- MongoDB update validation
-- Graceful failure on no modification
-- Standard ApiResponse error propagation
-
----
-
-## 10. Testing Guide
+## 7. Testing Guide
 
 Frontend Testing:
 - Microphone permission flows
@@ -239,25 +185,7 @@ Query ApplicationUser.Voice fields directly in MongoDB.
 
 ---
 
-## 11. Performance Notes
-
-- Audio processing done client-side
-- Small payloads to backend
-- No blocking operations on profile load
-- Minimal database write footprint
-
----
-
-## 12. Future Enhancements
-
-- Audio sample quality verification
-- Multiple language sample support
-- Expiry-based re-sample
-- Admin audit view
-
----
-
-## 13. References
+## 8. References
 
 - VoiceRecordingModal.tsx
 - Profile.tsx
@@ -265,14 +193,3 @@ Query ApplicationUser.Voice fields directly in MongoDB.
 - AuthController.cs
 
 ---
-
-## 14. Version and Change Log
-
-v1.0.0
-- Initial voice sample collection
-- Audio processing integration
-- MongoDB persistence
-
----
-
-End of Document
