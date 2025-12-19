@@ -153,13 +153,14 @@ erDiagram
 ### Authentication:
 The system uses **JWT-based authentication** for securing access to the API endpoints.
 
-### API Endpoints
+## **API Endpoints:**
 
-1. **GET /PhoneCalls/{id}/Transcription**  
-   ```
-2. **GET /PhoneCalls/{id}/Insights**  
-   ```
-3. **GET /BlobStorage/{callId}/Recording**  
+| **Description**                             | **HTTP Method** | **Endpoint**                                                |
+|---------------------------------------------|-----------------|------------------------------------------------------------|
+| **Get Transcription for Phone Call**       | GET             | [/PhoneCalls/{id}/Transcription](https://localhost:5004/api-docs/index.html) |
+| **Get Insights for Phone Call**            | GET             | [/PhoneCalls/{id}/Insights](https://localhost:5004/api-docs/index.html)      |
+| **Get Recording for Blob Storage**         | GET             | [/BlobStorage/{callId}/Recording](https://localhost:5004/api-docs/index.html) |
+
 ---
 
 ## **Testing Guide**
@@ -182,12 +183,6 @@ The system uses **JWT-based authentication** for securing access to the API endp
 
 - **Azure Blob Storage Documentation**: [Azure Blob Storage Docs](https://docs.microsoft.com/en-us/azure/storage/blobs/)
 - **Twilio API Documentation**: [Twilio Docs](https://www.twilio.com/docs)
-- **Sentiment Analysis API**: [AI Sentiment API Documentation](#) (Example URL)
 
 ---
 
-## **Version and Change Log**
-
-- **v1.0.0** (2025-12-18): Initial release with transcription and tone analysis features.
-
----
