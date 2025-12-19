@@ -16,18 +16,6 @@ Comprehensive documentation for the ActingOffice TimeSheet System covering all m
 | **[Clients Report](./Clients_Report.md)** | Client-wise time allocation and engagement | Time spent per client, team assignments |
 | **[Calls & Emails Report](./Calls_Emails.md)** | Communication activity tracking | Call logs, email statistics, task completion |
 
-### Report Categories
-
-**Performance Reports**:
-- [User Report](./User_Report.md) - Individual productivity metrics
-- [Teams Report](./Teams_Report.md) - Team efficiency analysis
-- [Modules Report](./Modules_Report.md) - Module-wise time distribution
-
-**Business Intelligence Reports**:
-- [Clients Report](./Clients_Report.md) - Client engagement metrics
-- [Calls & Emails Report](./Calls_Emails.md) - Communication analytics
-- [Dashboard Overview](./Dashboard.md) - Consolidated business metrics
-
 ## Quick Navigation
 
 ### By Business Function
@@ -381,30 +369,3 @@ To update documentation:
 ## License
 
 Copyright © Capsitech/ActingOffice. All rights reserved.
-
----
-
-## Quick Reference
-
-### Most Common Tasks
-
-| Task | Documentation |
-|------|---------------|
-| View overall performance | [Dashboard](./Dashboard.md) |
-| Check individual user | [User Report](./User_Report.md) |
-| Analyze team efficiency | [Teams Report](./Teams_Report.md) |
-| Review module activity | [Modules Report](./Modules_Report.md) |
-| Check client engagement | [Clients Report](./Clients_Report.md) |
-| Monitor communications | [Calls & Emails](./Calls_Emails.md) |
-
-### For Quick Help
-
-- **Need to understand data flow?** → Check DFD in each module
-- **Need to understand process?** → Check Process Flow diagrams
-- **Need to understand data structure?** → Check ER diagrams
-- **Need API details?** → Check Authentication/APIs section
-- **Need to test?** → Check Testing Guide in each module
-
----
-
-**For the latest updates and announcements, please refer to the API documentation portal.**
