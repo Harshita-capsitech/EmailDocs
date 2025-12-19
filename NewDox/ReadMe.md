@@ -8,6 +8,8 @@ The Acting Office Email System is a multi-provider email management platform tha
 ### Backend Services
 - **Acting Office APIs**: Handles authentication, provider linking/unlinking, and Communication Email module operations
 - **Acting Office Email Service**: Manages real-time email operations for the Emails module
+- **Acting Office Sync Service**: Synchronizes emails from providers to local database for offline access
+- **Acting Office Schedule Service**: Manages database-driven email scheduling and automatic delivery
 - **Acting Office AI Service (ConvoMail)**: Powers AI features like translation, summarization, and tone analysis
 
 ### Email Providers
@@ -26,7 +28,28 @@ Advanced email management with all features of the Emails Module plus scheduling
 
 📄 [View Detailed Documentation →](./Communication.md)
 
-### 3. AI Features
+### 3. Sync Mail Module
+Database synchronization system that keeps the local database in sync with email provider inboxes. Provides offline access, faster retrieval, and reduces dependency on provider APIs by maintaining a local copy of emails.
+
+**Key Capabilities:**
+- **Automatic Sync**: Periodic synchronization with Outlook/Gmail
+- **Incremental Updates**: Only fetches new or modified emails
+- **Offline Access**: View emails from local database when provider is unavailable
+- **Reduced API Calls**: Minimizes direct provider API dependencies
+- **Bi-directional Sync**: Local changes reflected back to provider
+
+### 4. Schedule Mail Module
+Independent email scheduling system that stores scheduled emails in the local database instead of relying on provider APIs. Provides complete control over email delivery timing with automatic sending at scheduled times.
+
+**Key Capabilities:**
+- **Database Storage**: Scheduled emails stored in local database
+- **Independent Execution**: Not dependent on provider API scheduling features
+- **Flexible Scheduling**: Schedule emails for any future date/time
+- **Automatic Delivery**: Background service sends emails at scheduled time
+- **Retry Logic**: Automatic retry on delivery failures
+- **Status Tracking**: Monitor scheduled, sent, and failed emails
+
+### 5. AI Features
 AI-powered email enhancements including translation (any language → English), content summarization, tone analysis, auto-complete suggestions, contextual reply generation, and automatic response drafting.
 
 **Available Features:**
@@ -53,8 +76,18 @@ AI-powered email enhancements including translation (any language → English), 
 - Attachment management
 - Draft saving and editing
 
-### Scheduling (Communication Module Only)
-- Schedule emails for future delivery
+### Sync Mail (Database Synchronization)
+- Automatic email synchronization from provider to database
+- Incremental sync for new/modified emails only
+- Offline email access from local database
+- Reduced API dependency and faster retrieval
+- Bi-directional sync capability
+- Configurable sync intervals
+
+### Schedule Mail (Independent Scheduling)
+- Database-driven email scheduling
+- Schedule emails for future delivery without provider API
+- Automatic background sending at scheduled time
 - Automatic retry on failures
 - Delivery status tracking
 - Queue management with retry logic
@@ -77,22 +110,56 @@ Compose and send emails instantly through either module.
 
 **Available In**: Emails Module, Communication Email Module
 
-### 3. Schedule Email for Later
-Plan email delivery for a specific future date and time with automatic retry.
+### 3. Sync Emails to Database
+Automatically synchronize emails from provider inbox to local database for faster access and offline availability.
 
-**Available In**: Communication Email Module only
+**Available In**: Sync Mail Module
+**Benefits**: Faster retrieval, offline access, reduced API calls
 
-### 4. AI-Enhanced Email Composition
+### 4. Schedule Email for Later
+Plan email delivery for a specific future date and time using database storage (independent of provider API).
+
+**Available In**: Schedule Mail Module, Communication Email Module
+**Storage**: Local database with automatic background delivery
+
+### 5. AI-Enhanced Email Composition
 Use AI features to translate, summarize, or generate contextual responses.
 
 **Available In**: Emails Module (AI integration)
 
-### 5. Switch Email Provider
+### 6. Switch Email Provider
 Unlink current provider and link a different one (Outlook ↔ Gmail).
 
 **Steps**: Unlink Current Account → Re-authorize → Link New Provider
 
+## Provider Comparison
 
+| Feature | Microsoft Outlook | Google Gmail |
+|---------|------------------|--------------|
+| **Provider Code** | 1 | 0 |
+| **Authentication** | Azure AD (OpenID Connect) | OAuth 2.0 |
+| **API** | Microsoft Graph API | Gmail API |
+| **Notifications** | Webhook Subscriptions | Push Notifications |
+| **Supported Modules** | ✅ Emails<br>✅ Communication Email<br>✅ AI Features | ✅ Emails<br>✅ Communication Email<br>✅ AI Features |
+
+## Module Comparison
+
+| Feature | Emails Module | Communication Module | Sync Mail Module | Schedule Mail Module |
+|---------|---------------|---------------------|------------------|---------------------|
+| **Backend Service** | Email Orchestration Service | Acting Office APIs | Acting Office APIs | Acting Office APIs |
+| **Data Storage** | Provider API only | Database + Provider API | Local Database | Local Database |
+| **View Inbox** | ✅ Real-time from provider | ✅ Real-time from provider | ✅ From local database | ❌ |
+| **Send Email** | ✅ Immediate | ✅ Immediate | ❌ | ✅ Scheduled only |
+| **Organize Folders** | ✅ | ✅ | ✅ Synced folders | ❌ |
+| **Search & Filter** | ✅ Provider-based | ✅ Provider-based | ✅ Database-based | ✅ Schedule queue |
+| **Draft Management** | ✅ | ✅ | ✅ Synced drafts | ❌ |
+| **Schedule Email** | ❌ | ✅ | ❌ | ✅ Primary feature |
+| **Offline Access** | ❌ | ❌ | ✅ | ✅ Schedule data |
+| **Sync Capability** | ❌ | ❌ | ✅ Bi-directional | ❌ |
+| **API Dependency** | High | High | Low (after sync) | Low |
+| **Delivery Tracking** | Basic | ✅ | ❌ | ✅ Comprehensive |
+| **Automatic Retry** | ❌ | ✅ | ❌ | ✅ |
+| **AI Features** | ✅ | ✅ | ✅ | ❌ |
 
 ## Quick Reference
 
@@ -114,6 +181,19 @@ Unlink current provider and link a different one (Outlook ↔ Gmail).
 - **Get Scheduled**: `/GetScheduleMails`
 - **Get Drafts**: `/GetDraftMails`
 
+### Sync Mail Operations
+- **Trigger Sync**: `/Sync/Inbox`
+- **Sync Status**: `/Sync/Status`
+- **Get Synced Emails**: `/Sync/Emails`
+- **Sync Settings**: `/Sync/Settings`
+
+### Schedule Mail Operations
+- **Create Schedule**: `/Schedule/Create`
+- **Get Schedules**: `/Schedule/List`
+- **Update Schedule**: `/Schedule/{id}`
+- **Delete Schedule**: `/Schedule/{id}/Delete`
+- **Send Now**: `/Schedule/{id}/SendNow`
+
 ### AI Features
 - **Translate**: `/translate`
 - **Summarize**: `/summarize`
@@ -129,6 +209,24 @@ Unlink current provider and link a different one (Outlook ↔ Gmail).
 - Account must be re-linked if credentials expire
 - Unlinking removes all subscriptions and tokens
 - Failed emails from last 15 days are re-queued on re-linking
+
+### Sync Mail
+- Automatic sync runs at configurable intervals (default: every 5 minutes)
+- Incremental sync only fetches new/modified emails since last sync
+- Local database maintains copy of emails for offline access
+- Sync conflicts resolved with provider data as source of truth
+- Failed sync attempts retry automatically
+- Sync history maintained for audit purposes
+
+### Schedule Mail (Database-Driven)
+- Scheduled emails stored in local database, not provider API
+- Background service checks queue every minute for due emails
+- Automatic sending when scheduled time is reached
+- Maximum retry attempts: 3 (configurable based on error type)
+- Automatic retry after account re-linking for auth failures
+- User notified on permanent failures after max retries
+- Draft emails can be converted to scheduled emails
+- Scheduled emails can be edited before send time
 
 ### Email Scheduling (Communication Module)
 - Scheduled emails stored in queue with retry logic
@@ -155,18 +253,31 @@ Unlink current provider and link a different one (Outlook ↔ Gmail).
 - Distributed caching for performance
 - Queue-based scheduling architecture
 - Horizontal scaling capability
+- Database-driven sync reduces API load
+- Efficient incremental sync mechanism
 
 ### Reliability
 - Automatic token refresh
 - Failed email retry mechanism (15-day retention)
 - Comprehensive error handling
 - Delivery status tracking
+- Offline email access via Sync Mail
+- Independent scheduling with database storage
 
 ### Security
 - OAuth 2.0 / OpenID Connect authentication
 - Encrypted token storage
 - Role-based access control
 - Audit trail for operations
+- Secure local database storage
+- Data encryption at rest and in transit
+
+### Performance
+- Reduced API dependency through local database
+- Faster email retrieval from synced data
+- Optimized incremental sync
+- Background scheduling service
+- Efficient queue processing
 
 ## Best Practices
 
@@ -174,13 +285,23 @@ Unlink current provider and link a different one (Outlook ↔ Gmail).
 
 ✅ **Re-link Promptly**: Re-authorize account immediately when notified to ensure email continuity
 
-✅ **Use Scheduling Wisely**: Use Communication Email Module for time-sensitive emails requiring delivery tracking
+✅ **Use Sync Mail for Performance**: Enable sync for faster email access and reduced API calls
+
+✅ **Monitor Sync Status**: Regularly check sync status to ensure database is up-to-date
+
+✅ **Use Schedule Mail for Reliability**: Database-driven scheduling provides better control and tracking
+
+✅ **Configure Sync Intervals**: Adjust sync frequency based on email volume and requirements
+
+✅ **Leverage Offline Access**: Use synced emails when provider APIs are unavailable
+
+✅ **Use Scheduling Wisely**: Use Schedule Mail Module for time-sensitive emails requiring delivery tracking
 
 ✅ **Leverage AI Features**: Utilize AI tools for translation, summarization, and professional communication
 
-✅ **Monitor Scheduled Emails**: Regularly check scheduled email status in Communication Module
+✅ **Monitor Scheduled Emails**: Regularly check scheduled email status in Schedule Mail Module
 
-✅ **Choose Right Module**: Use Emails Module for immediate operations, Communication Module for scheduling
+✅ **Choose Right Module**: Use Emails Module for immediate operations, Schedule Mail for future delivery, Sync Mail for offline access
 
 ## Troubleshooting
 
@@ -190,13 +311,25 @@ Unlink current provider and link a different one (Outlook ↔ Gmail).
 - **Solution**: Check if account is linked. If status shows "NeedApproval", re-link your account.
 
 **Issue**: Scheduled email not sent
-- **Solution**: Verify account link status. System automatically retries after re-linking.
+- **Solution**: Verify account link status. Check Schedule Mail queue. System automatically retries after re-linking.
+
+**Issue**: Sync not working
+- **Solution**: Check sync status and last sync time. Verify account link. Manually trigger sync if needed.
+
+**Issue**: Emails not appearing in synced database
+- **Solution**: Check sync service status. Verify sync settings. Review sync error logs.
+
+**Issue**: Scheduled email stuck in queue
+- **Solution**: Check background service status. Verify scheduled time. Check for authentication errors.
 
 **Issue**: Token expired error
 - **Solution**: System attempts automatic refresh. If it fails, you'll be notified to re-link.
 
 **Issue**: Provider switch not working
 - **Solution**: Completely unlink current provider before linking new one.
+
+**Issue**: Slow email retrieval
+- **Solution**: Enable Sync Mail for faster access. Check if sync is up-to-date.
 
 ## Process Documentation
 
@@ -210,8 +343,12 @@ Key data entities:
 - **ApplicationUserAccessTokens**: User authentication tokens
 - **UserMicrosoftAccessToken**: Microsoft-specific credentials
 - **UserGoogleAccessToken**: Google-specific credentials
-- **EmailQueueItem**: Scheduled emails queue
+- **EmailQueueItem**: Scheduled emails queue (Communication Module)
 - **EmailQueueItemError**: Failed delivery tracking
+- **SyncedEmail**: Synchronized emails stored in local database
+- **SyncStatus**: Email synchronization status and history
+- **ScheduledEmailItem**: Database-stored scheduled emails (Schedule Mail Module)
+- **EmailDeliveryLog**: Email delivery tracking and audit trail
 
 ## API Documentation
 
