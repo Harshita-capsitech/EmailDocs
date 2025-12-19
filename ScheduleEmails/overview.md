@@ -81,31 +81,62 @@ AuthService edge3@--> P1
 ---
 ## **Process Flow**
 
-1. **Create Email**  
+1. **Start**  
+   - The email management process begins when a user initiates the system to compose, manage, or track emails.
+
+2. **Compose Email**  
    - A user can compose a new email by specifying the recipients, subject, body, and attachments.
-   - The system validates the email content and saves it as a draft if required.
+   - The user enters all necessary email details in the composition interface.
 
-2. **Save as Draft**  
-   - Emails can be saved as drafts for future editing. This allows users to complete their emails at a later time.
+3. **System Validates Email**  
+   - The system validates the email content, checking for required fields, proper email formats, and any content restrictions.
+   - If validation fails, the system displays error messages to the user.
 
-3. **Schedule Email**  
+4. **Show Errors**  
+   - When validation fails, specific error messages are displayed to guide the user in correcting the issues.
+   - The user is redirected back to the composition screen to fix the errors and resubmit.
+
+5. **Send Now Decision**  
+   - After successful validation, the user decides how to proceed with the email:
+     - Send immediately
+     - Schedule for later delivery
+     - Save as draft for future editing
+
+6. **Email Sent (Immediate)**  
+   - If the user chooses to send immediately, the email is marked as sent and stored in the database.
+   - The email is then passed to the SMTP service for delivery.
+
+7. **Schedule Email**  
    - Users can schedule emails to be sent at a specified time in the future.
-   - Scheduled emails are stored in the database and processed by a background job to be sent at the scheduled time.
+   - Scheduled emails are stored in the database with their designated send time and processed by a background job to be sent at the scheduled time.
 
-4. **Send Email**  
-   - Emails are sent to the recipients via an integrated email service (SMTP or third-party service).
-   - The system tracks the email’s status (sent, failed, pending).
+8. **Save as Draft**  
+   - Emails can be saved as drafts for future editing. This allows users to complete their emails at a later time.
+   - Drafts are stored in the database and can be retrieved for editing before sending.
 
-5. **View Sent and Scheduled Emails**  
-   - Users can view their sent and scheduled emails in a list view.
-   - Emails can be filtered based on status (e.g., sent, failed, pending) and other criteria (e.g., recipient, subject).
+9. **Track Status**  
+    - The system tracks the email's status throughout the delivery process (sent, failed, pending).
+    - Status updates are monitored in real-time and recorded in the database.
 
-6. **Edit Email**  
-   - Users can edit drafts before sending them, including modifying the recipients, subject, or message body.
+10. **Log Failure & Retry**  
+    - Failed email attempts are logged with detailed error information, and users are notified of any issues.
+    - The system retries sending emails that fail under certain conditions, implementing automatic retry logic.
+    - After retry attempts, the status is updated and tracked again.
 
-7. **Email Failure Handling**  
-   - Failed email attempts are logged, and users are notified of any issues. The system retries sending emails that fail under certain conditions.
+11. **List (Sent, Scheduled, Failed, Drafts)**  
+    - Users can view their sent, scheduled, failed, and draft emails in a comprehensive list view.
+    - The list provides an organized overview of all emails across different states in the system.
 
+12. **Filter Emails**  
+    - Emails can be filtered based on status (e.g., sent, failed, pending, scheduled, drafts) and other criteria (e.g., recipient, subject, date).
+    - The filtering system allows users to quickly locate specific emails within their collection.
+
+13. **Edit Draft**  
+    - Users can edit drafts before sending them, including modifying the recipients, subject, message body, or attachments.
+    - After editing, the draft returns to the composition stage for validation and processing.
+
+14. **End**  
+    - The process concludes when the user exits the email management interface or completes their email management tasks.
 ---
 
 ### **Process Flow Diagram**:
@@ -310,8 +341,7 @@ Represents a conversation thread of emails.
 
 ### **Authentication**
 
-- **Role-Based Access Control (RBAC)**: The **Email Module** uses RBAC for authentication, meaning that different user roles have different access levels and permissions.
-- **JWT Tokens**: Users must authenticate via JWT (JSON Web Tokens) to access the system's email-related services.
+- **Role-Based Access Control (RBAC)**: The **Email Module** uses RBAC for authentication and authorization. Access to this module is restricted using `[Authorize(Roles = "ADMIN,MANAGER,STAFF")]`, ensuring that only users with **ADMIN**, **MANAGER**, or **STAFF** roles can access it.
 
 ### **API Endpoints**
 
