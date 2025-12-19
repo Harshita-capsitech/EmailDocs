@@ -106,8 +106,6 @@ sequenceDiagram
 
 ```mermaid
 erDiagram
-    direction LR
-
     USER ||--o| VOICESTATUS : has
 
     USER {
@@ -121,11 +119,6 @@ erDiagram
         string TaskId FK "Foreign Key to USER"
     }
 
-    %% Highlight VOICESTATUS to simulate 'active' state/focus with black color
-    classDef active fill:#000000,stroke:#ffffff,stroke-width:3px
-    class VOICESTATUS active
-
-    %% Optionally, style keys for greater clarity
 ```
 
 ---
