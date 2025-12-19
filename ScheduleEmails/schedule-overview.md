@@ -124,19 +124,6 @@ Update Status"]
      scheduleList:::core
      draft:::core
      reschedule:::core
-    classDef core fill:#e3ecfa,stroke:#364fc7,stroke-width:2px
-    style user stroke:#000000,color:#FFFFFF,fill:#757575
-    style edit fill:#757575,stroke:#000000,color:#FFFFFF
-    style scheduleSend fill:#757575,stroke:#000000,color:#FFFFFF
-    style store fill:#757575,stroke:#000000,color:#FFFFFF
-    style process fill:#757575,stroke:#000000,color:#FFFFFF
-    style send fill:#757575,color:#FFFFFF,stroke:#000000
-    style status fill:#757575,color:#FFFFFF
-    style retry color:#FFFFFF,fill:#757575
-    style scheduleList fill:#757575,color:#FFFFFF,stroke:#000000
-    style draft color:#FFFFFF,fill:#757575,stroke:#000000
-    style reschedule fill:#757575,color:#FFFFFF,stroke:#000000
-    style notif fill:#757575,color:#FFFFFF
     e1@{ animation: fast }
     e2@{ animation: fast }
     e3@{ animation: fast }
@@ -226,9 +213,7 @@ erDiagram
     DRAFTEMAIL ||--o{ EMAILID : "has"
     DRAFTEMAIL ||--o{ SCHEDULEDATETIME : "schedules at"
 
-    %% Dark, grey style
-    classDef darknode fill:#222,stroke:#555,stroke-width:3px,color:#ddd;
-    class USER,SCHEDULEEMAIL,DRAFTEMAIL,SCHEDULEDSTATUS,ATTACHMENT,CONTACTS,COMPANY,EMAILID,SCHEDULEDATETIME darknode
+    
 ```
 ---
 
@@ -266,16 +251,11 @@ erDiagram
 ## References
 - **EmailService**: Core service that interacts with Gmail, Outlook, and other external email APIs.
 - **OAuth Authentication**: OAuth 2.0 for secure email service access.
-- **Capsitech FluentUI**: UI components used in the scheduling and management of emails.
+
+
 
 ---
 
-## Version and Change Log
-- **Version 1.0**: Initial release with basic email scheduling functionality.
-- **Version 1.1**: Added email failure handling and retry mechanism with **ProcessFailedScheduleEmails**.
-- **Version 1.2**: UI enhancements for draft management and scheduling.
-
----
 
 
 
