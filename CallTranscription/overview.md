@@ -55,6 +55,7 @@ flowchart LR
 ```
 
 ---
+## **Process Flow**
 ```mermaid
 flowchart TD
     Start([Start]) e1@--> A[User records voice sample
@@ -155,6 +156,7 @@ This structure ensures minimal data storage to maintain privacy and compliance.
 ---
 
 End of Document
+
 
 
 
