@@ -109,48 +109,20 @@ erDiagram
 
 ---
 
-## Authentication / APIs
 
-### Authentication:
-- **Role-based Access**: Only authorized users with the "ADMIN" role can access the **ModuleReport** API.
+# Authentication / APIs
 
-### API Endpoints:
+### Authentication
+The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access. The backend is protected using role-based access control (RBAC) with the `[Authorize]` attribute.
 
-#### `GET /ModuleReport`
-This API returns the timesheet data for each user in the team. Filters can be applied for date ranges and team.
+### API Endpoints
 
-**Request Parameters**:
-- **sortCol** (optional): Column name to sort (e.g., 'name', 'taxAndAccounts', etc.).
-- **sortDir** (optional): Sorting direction ("asc" or "desc").
-- **fromDate** (optional): Start date for the data range.
-- **toDate** (optional): End date for the data range.
-- **teamId** (optional): The team ID to filter the report.
+| **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
+|------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
+| **Get Teams Report List**          | GET                           | [/TeamsReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Team Report (Members)**      | GET                           | [/teamsreport/{teamId}/TeamReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
-**Response**:
-- **PagedData<PageViewsModuleReportResponseItem>**: The response contains an array of module report data for each user, along with a total count of records.
 
-**Example Response**:
-```json
-{
-  "result": {
-    "items": [
-      {
-        "id": "user123",
-        "name": "John Doe",
-        "taxAndAccounts": 15,
-        "accounts": 10,
-        "total": 25
-      }
-    ],
-    "totalRecords": 1,
-    "total": {
-      "taxAndAccounts": 15,
-      "accounts": 10,
-      "total": 25
-    }
-  }
-}
-```
 
 ---
 
@@ -173,7 +145,5 @@ This API returns the timesheet data for each user in the team. Filters can be ap
 ---
 
 ## References
-1. [MongoDB Aggregation Documentation](https://docs.mongodb.com/manual/reference/operator/aggregation/)
-2. [Fluent UI Documentation](https://developer.microsoft.com/en-us/fluentui#/)
-3. [React Documentation](https://reactjs.org/docs/getting-started.html)
-4. [TimesheetService](https://example.com/timesheetservice)
+- **[API Documentation](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)**
+
