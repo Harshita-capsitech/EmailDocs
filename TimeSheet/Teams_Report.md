@@ -237,11 +237,10 @@ The following ER diagram illustrates the relationships between various entities 
 The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access. The backend is protected using role-based access control (RBAC) with the `[Authorize]` attribute.
 
 ### API Endpoints
-
 | **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
 |------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
-| **Get Teams Report List**          | GET                           | [/TeamsReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
-| **Get Team Report (Members)**      | GET                           | [/teamsreport/{teamId}/TeamReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Module Report **          | GET                           | [/ModuleReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+
 
 
 
