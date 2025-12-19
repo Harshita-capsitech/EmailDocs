@@ -81,8 +81,6 @@ No raw biometric data in core system]
 
 ```mermaid
 erDiagram
-    direction LR
-
     USER ||--o| VOICESTATUS : has
 
     USER {
@@ -93,14 +91,9 @@ erDiagram
     VOICESTATUS {
         bool Recorded "Has Voice Sample"
         datetime On "Date Recorded"
-        string UserId FK "Foreign Key to USER"
+        string TaskId FK "Foreign Key to USER"
     }
 
-    %% Highlight VOICESTATUS to simulate 'active' state/focus with black color
-    classDef active fill:#000000,stroke:#ffffff,stroke-width:3px
-    class VOICESTATUS active
-
-    %% Optionally, style keys for greater clarity
 ```
 
 ---
@@ -156,6 +149,7 @@ This structure ensures minimal data storage to maintain privacy and compliance.
 ---
 
 End of Document
+
 
 
 
