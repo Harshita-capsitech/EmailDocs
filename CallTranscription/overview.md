@@ -114,32 +114,13 @@ This structure ensures minimal data storage to maintain privacy and compliance.
 
 ## **Authentication / APIs**
 
-### Frontend APIs (ProfileService)
+## **API Endpoints:**
 
-1. **checkAudio**
-   - Endpoint: `/sample`
-   - Method: `POST`
-   - Payload: `multipart/form-data`
-   - Responsibility: Initiates audio collection and prepares the sample for processing.
-
-2. **uploadAudio**
-   - Endpoint: `/Auth/UploadAudio`
-   - Method: `POST`
-   - Payload: `boolean`
-   - Responsibility: Persists the collection result into the backend system.
-
----
-
-### Backend API (AuthController)
-
-1. **POST /Auth/UploadAudio**
-
-Behavior:
-   1. Validates authenticated user.
-   2. Filters MongoDB document using `PracticeId` and `UserId`.
-   3. Updates `user.voice.recorded` and `user.voice.on`.
-
-Note: No raw audio is stored or processed at this layer.
+| **Description**                             | **HTTP Method** | **Endpoint**                                                | 
+|---------------------------------------------|-----------------|------------------------------------------------------------|
+| **Check Audio**                             | POST            | [/sample](https://localhost:5004/api-docs/index.html)       |
+| **Upload Audio**                            | POST            | [/Auth/UploadAudio](https://localhost:5004/api-docs/index.html) | 
+| **Upload Audio Sample (AuthController)**    | POST            | [/Auth/UploadAudio](https://localhost:5004/api-docs/index.html) |
 
 ---
 
@@ -170,4 +151,5 @@ Note: No raw audio is stored or processed at this layer.
 ---
 
 End of Document
+
 
