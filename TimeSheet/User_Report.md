@@ -65,7 +65,7 @@ This process flow describes how an Admin or Manager interacts with the dashboard
 5. **Backend Sends Report Data**: After the data is aggregated and filtered, the backend sends the report data back to the frontend.
 6. **Dashboard Displays Report**: The frontend receives the data and displays the team or member report in a visual format on the dashboard.
 7. **End**: The process ends when the report is displayed successfully to the Admin or Manager.
-
+---
 ### Process Flow Diagram
 
 ```mermaid
@@ -93,7 +93,7 @@ flowchart TB
 
 ```
 
-## ER Diagram
+# ER Diagram
 ```mermaid
 erDiagram
     USER {
@@ -155,7 +155,7 @@ Represents the final aggregated timesheet data for a user. This is a summary of 
 - A **Timesheet** entry belongs to one **Module**.
 - A **User** generates one **Report**, which aggregates the total time from their timesheet entries.
 
-## Authentication / APIs
+# Authentication / APIs
 
 ### Authentication
 The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access. The backend is protected using role-based access control (RBAC) with the `[Authorize]` attribute.
@@ -168,7 +168,7 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 
 
 
-## Testing Guide
+# Testing Guide
 ### Backend Testing:
 1. Test the API with different combinations of filters (`userId`, `fromDate`, `toDate`, `sortCol`, etc.).
 2. Validate data integrity by comparing the API's response with expected results.
@@ -181,6 +181,6 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 - **Scenario**: Requesting a report for a specific user for the past month.
 - **Expected Outcome**: The backend should correctly filter data based on the user and date range. The frontend should display the data without errors.
 
-## **References**
+# **References**
 
 - **API Documentation**: [Link to email service API documentation].
