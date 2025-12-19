@@ -140,10 +140,8 @@ This structure ensures minimal data storage to maintain privacy and compliance.
 
 ## **References**
 
-- `VoiceRecordingModal.tsx`
-- `Profile.tsx`
-- `ProfileService.tsx`
-- `AuthController.cs`
+- **Azure Blob Storage Documentation**: [Azure Blob Storage Docs](https://docs.microsoft.com/en-us/azure/storage/blobs/)
+- **Twilio API Documentation**: [Twilio Docs](https://www.twilio.com/docs)
 
 ---
 
@@ -157,6 +155,7 @@ This structure ensures minimal data storage to maintain privacy and compliance.
 ---
 
 End of Document
+
 
 
 
