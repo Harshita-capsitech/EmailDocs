@@ -13,9 +13,8 @@ The Teams Report system is designed to provide administrators and managers with 
 - **Weekend Inclusion**: Option to include/exclude weekends from the report.
 - **Member Details**: Displays detailed metrics for each team member, including time worked, efficiency, and available time.
 
----
 
-## DFD (Data Flow Diagram)
+# DFD (Data Flow Diagram)
 
 This diagram outlines the data flow between various components of the system, showing how the admin/manager interacts with the UI, the communication and reports modules, and other key features.
 
@@ -140,7 +139,7 @@ flowchart TD
 
 ```
 
-## ER Diagram
+# ER Diagram
 ```mermaid
 erDiagram
     AdminManager {
@@ -232,7 +231,7 @@ The following ER diagram illustrates the relationships between various entities 
 - **UserSessionPageView** generates **TeamMemberReport**: The data from a user’s session is aggregated to create a report summarizing their performance.
 
 
-## Authentication / APIs
+# Authentication / APIs
 
 ### Authentication
 The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access. The backend is protected using role-based access control (RBAC) with the `[Authorize]` attribute.
@@ -246,7 +245,7 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 
 
 
-## Testing Guide:
+# Testing Guide:
 
 ### 1. **Data Fetching Tests:**
    - **Teams List API**: Ensure the list of teams returns correct data.
@@ -267,7 +266,7 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 ### 5. **Error Handling:**
    - Verify that the system displays appropriate error messages for invalid inputs or backend failures without crashing.
 
-## **References**
+# **References**
 
 - **API Documentation**: [Link to email service API documentation].
 
