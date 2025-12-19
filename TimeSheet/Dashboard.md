@@ -31,14 +31,13 @@ flowchart TD
       comm("Communication Overview")
       salesq("Sales and Quotes")
       overview("Overview Report")
-      userstat("UserStat")
+      userstat("UserStats")
     end
 
     api["API"]
     backend{{"Backend"}}
     agg["Aggregation"]
     db[("Database")]
-    resp["Response"]
 
     %% Animated edges for "movable" effect
     user e1@--> frontend
@@ -54,8 +53,8 @@ flowchart TD
     api e10@--> backend
     backend e11@--> agg
     agg e12@--> db
-    db e13@--> resp
-    resp e14@--> frontend
+    db e13@--> api
+    api e14@--> frontend
 
     %% Turn on edge animations
     e1@{ animate: true }
@@ -116,49 +115,70 @@ The process flow describes the steps involved in a system that handles user auth
 
 ```mermaid
 flowchart TB
-    user["User"] --> userAuth["Authenticate User"]
-    userAuth --> authService["Authentication Auth Service"]
-    authService --> admin["Admin/Manager<br/>User"]
-    admin --> frontend["Browser UI"]
-    frontend --> timesheet["Timesheet<br/>Report Card"] & salesQuotes["Sales and Quotes"] & comm["Communication<br/>Overview"] & userstats["User Stats<br/>Table"]
-    timesheet --> apiOverview["API Call<br/>/OverviewReport"]
-    userstats --> apiUserStats["API Call<br/>/UserStats"]
-    salesQuotes --> apiSalesQuotes["API Call<br/>/SalesAndQuotes"]
-    comm --> apiComm["API Call<br/>/Communication"]
-    apiOverview --> backendAPI["Backend API Controller"]
-    apiUserStats --> backendAPI
-    apiSalesQuotes --> backendAPI
-    apiComm --> backendAPI
-    backendAPI --> backendDB["MongoDB"]
-    backendDB --> appUserDB["ApplicationUserDB"] & phoneCallDB["PhoneCallDB"] & businessInvoiceDB["BusinessInvoiceDB"] & businessQuoteDB["BusinessQuoteDB"]
-    appUserDB --> userData["Fetch User Data"]
-    phoneCallDB --> commData["Fetch Comm Data"]
-    businessInvoiceDB --> salesData["Fetch Sales Data"]
-    businessQuoteDB --> quoteData["Fetch Quote Data"]
+    user["User"] e1@--> userAuth["Authenticate User"]
+    userAuth e2@--> authService["Authentication Auth Service"]
+    authService e3@--> admin["Admin/Manager<br/>User"]
+    admin e4@--> frontend["Browser UI"]
+    frontend e5@--> timesheet["Timesheet<br/>Report Card"] & salesQuotes["Sales and Quotes"] & comm["Communication<br/>Overview"] & userstats["User Stats<br/>Table"]
+    timesheet e6@--> apiOverview["API Call<br/>/OverviewReport"]
+    userstats e7@--> apiUserStats["API Call<br/>/UserStats"]
+    salesQuotes e8@--> apiSalesQuotes["API Call<br/>/SalesAndQuotes"]
+    comm e9@--> apiComm["API Call<br/>/Communication"]
+    apiOverview e10@--> backendAPI["Backend API Controller"]
+    apiUserStats e11@--> backendAPI
+    apiSalesQuotes e12@--> backendAPI
+    apiComm e13@--> backendAPI
+    backendAPI e14@--> backendDB["MongoDB"]
+    backendDB e15@--> appUserDB["ApplicationUserDB"] & phoneCallDB["PhoneCallDB"] & businessInvoiceDB["BusinessInvoiceDB"] & businessQuoteDB["BusinessQuoteDB"]
+    appUserDB e16@--> userData["Fetch User Data"]
+    phoneCallDB e17@--> commData["Fetch Comm Data"]
+    businessInvoiceDB e18@--> salesData["Fetch Sales Data"]
+    businessQuoteDB e19@--> quoteData["Fetch Quote Data"]
 
-    user@{ shape: cyl}
-    userAuth@{ shape: rounded}
-    authService@{ shape: rect}
-    admin@{ shape: cyl}
-    frontend@{ shape: rect}
-    timesheet@{ shape: notch-rect}
-    salesQuotes@{ shape: notch-rect}
-    comm@{ shape: notch-rect}
-    userstats@{ shape: notch-rect}
-    apiOverview@{ shape: rect}
-    apiUserStats@{ shape: rect}
-    apiSalesQuotes@{ shape: rect}
-    apiComm@{ shape: rect}
-    backendAPI@{ shape: rect}
-    backendDB@{ shape: cyl}
-    appUserDB@{ shape: rect}
-    phoneCallDB@{ shape: rect}
-    businessInvoiceDB@{ shape: rect}
-    businessQuoteDB@{ shape: rect}
-    userData@{ shape: rect}
-    commData@{ shape: rect}
-    salesData@{ shape: rect}
-    quoteData@{ shape: rect}
+    user@{ shape: cyl }
+    userAuth@{ shape: rounded }
+    authService@{ shape: rect }
+    admin@{ shape: cyl }
+    frontend@{ shape: rect }
+    timesheet@{ shape: notch-rect }
+    salesQuotes@{ shape: notch-rect }
+    comm@{ shape: notch-rect }
+    userstats@{ shape: notch-rect }
+    apiOverview@{ shape: rect }
+    apiUserStats@{ shape: rect }
+    apiSalesQuotes@{ shape: rect }
+    apiComm@{ shape: rect }
+    backendAPI@{ shape: rect }
+    backendDB@{ shape: cyl }
+    appUserDB@{ shape: rect }
+    phoneCallDB@{ shape: rect }
+    businessInvoiceDB@{ shape: rect }
+    businessQuoteDB@{ shape: rect }
+    userData@{ shape: rect }
+    commData@{ shape: rect }
+    salesData@{ shape: rect }
+    quoteData@{ shape: rect }
+
+    %% Animate all edges for "movable" appearance
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
+    e9@{ animate: true }
+    e10@{ animate: true }
+    e11@{ animate: true }
+    e12@{ animate: true }
+    e13@{ animate: true }
+    e14@{ animate: true }
+    e15@{ animate: true }
+    e16@{ animate: true }
+    e17@{ animate: true }
+    e18@{ animate: true }
+    e19@{ animate: true }
 ```
 
 ##  ER Diagram
@@ -327,11 +347,8 @@ erDiagram
 
 This section outlines the API routes and authentication used in the Timesheet Dashboard.
 
-## **Authentication**
-- Most endpoints infer **PracticeId** from the authenticated user context (`User.GetPracticeId()`).
-- `UserReport` is explicitly protected: `[Authorize(Roles = "ADMIN")]`.
-- `TeamReport` allows `[Authorize(Roles = "ADMIN,MANAGER")]`.
-
+### **Authentication**
+The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access. The backend is protected using role-based access control (RBAC) with the `[Authorize]` attribute.
 
 ## **API Endpoints:**
 
@@ -428,15 +445,11 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
 
 ##  References
 
-### Frontend modules (uploaded)
-- Dashboard container: `NewAdminTimeSheet.tsx` 
-- Communication + Reviews cards: `NewCommunicationReviewsCardComponent.tsx`   
-- Sales + Quotes cards: `NewSalesQuotesCardComponent.tsx` 
-- Top/Bottom user table: `NewTimeSheetUserTable.tsx` 
+## **References**
 
-### Notes
-- The dashboard triggers API calls via `useEffect` based on dependencies like `fromDate`, `toDate`, `refresh`, and `teamId`. 
-- Sales/Quotes depend on `ReportService.getQuotesAndSalesReport(...)` and render ECharts charts. 
+- **API Documentation**: [Link to AO API documentation].
+
+---
 
 
 
