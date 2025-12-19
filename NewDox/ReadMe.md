@@ -19,7 +19,7 @@ The Acting Office Email System is a multi-provider email management platform tha
 ### 1. Emails Module
 Real-time email management with instant access to inbox, sent items, and drafts. Provides standard email operations including compose, send, organize, search, and filter across both Outlook and Gmail providers.
 
-📄 [View Detailed Documentation →](./emailsection.md)
+📄 [View Detailed Documentation →](./Inbox.md)
 
 ### 2. Communication Email Module
 Advanced email management with all features of the Emails Module plus scheduling capabilities. Schedule emails for future delivery with automatic retry logic and delivery tracking.
