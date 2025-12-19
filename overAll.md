@@ -863,13 +863,22 @@ The Acting Office Email System provides RESTful APIs organized into two main cat
 
 **Communication Module (Acting Office APIs):**
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/Communication/Inbox` | GET | Retrieve inbox with same features as Email Module |
-| `/Communication/Send` | POST | Send email immediately |
-| `/Communication/Schedule` | POST | Schedule email for future delivery |
-| `/Communication/Scheduled` | GET | Get list of scheduled emails |
-| `/Communication/Cancel` | DELETE | Cancel scheduled email |
+| **Endpoint**            | **HTTP Method** | **Purpose**                                     |
+| ----------------------- | --------------- | ----------------------------------------------- |
+| [`/SendEmail`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)            | POST            | Send an email immediately                       |
+| [`/CannedMessages`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)       | GET             | Retrieve predefined (canned) email messages     |
+| [`/SaveDraft`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)            | POST            | Create a new email draft                        |
+| [`/SaveDraft/{id}`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)       | POST            | Update an existing email draft                  |
+| [`/GetDraftMails`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)        | GET             | Fetch all saved draft emails                    |
+| [`/DraftFileDownload`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)    | GET             | Download attachment from a draft email          |
+| [`/GetScheduleMails`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)     | GET             | Retrieve all scheduled emails                   |
+| [`/SaveSchedule`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)         | POST            | Create a new email schedule                     |
+| [`/SaveSchedule/{id}`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)    | POST            | Update an existing scheduled email              |
+| [`/UpdateSchedule/{id}`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)  | POST            | Modify schedule details (status/content/timing) |
+| [`/schedule/{id}`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)        | GET             | Fetch scheduled email details by ID             |
+| [`/SendSchedule/{id}`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)    | POST            | Trigger sending of a scheduled email            |
+| [`/ScheduleFileDownload`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) | GET             | Download attachment from a scheduled email      |
+
 
 ### 6.5 Common API Features
 
