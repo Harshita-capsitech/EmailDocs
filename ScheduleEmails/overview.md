@@ -141,17 +141,6 @@ AuthService edge3@--> P1
 
 ### **Process Flow Diagram**:
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    background: '#181818'
-    primaryColor: '#222'
-    primaryTextColor: '#eeeeee'
-    nodeBorder: '#888'
-    fontSize: 16px
-  layout: dagre
----
 flowchart TB
     start(["Start"]) e1@--> CE["Compose Email"]
     CE e2@--> VAL["System Validates Email"]
