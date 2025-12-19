@@ -20,7 +20,36 @@ This diagram outlines the data flow between various components of the system, sh
 
 ```mermaid
 flowchart TB
+
+    %% =====================
+    %% Swimlanes for layout
+    %% =====================
+
+    subgraph User_Lane["User"]
+        User
+    end
+
+    subgraph Frontend_Lane["Frontend"]
+        FrontendUI
+    end
+
+    subgraph Backend_Lane["Backend Services"]
+        BackendAPI_TeamsList
+        BackendAPI_TeamMemberReport
+        DataAggregation
+    end
+
+    subgraph Data_Lane["Data Layer"]
+        TeamsDB
+        SessionDB
+        UserDB
+        UserSessionData
+    end
+
+    %% =====================
     %% Main Flow (all edges uniquely identified and animated)
+    %% =====================
+
     User e1@-- "Initiates Request" --> FrontendUI
     FrontendUI e2@-- "API Call to Get Teams List" --> BackendAPI_TeamsList
     BackendAPI_TeamsList e3@-- "Retrieve Team Data" --> TeamsDB
@@ -35,11 +64,17 @@ flowchart TB
     BackendAPI_TeamMemberReport e11@-- "Return Team Member Report to Frontend" --> FrontendUI
     FrontendUI e12@-- "Display Team Report" --> User
 
+    %% =====================
     %% Auxiliary Flows (animated dashed)
+    %% =====================
+
     TeamsDB e13@-. "User-Team Relationship Data" .-> UserDB
     SessionDB e14@-. "User Session Data" .-> UserSessionData
 
+    %% =====================
     %% Shapes for clarity
+    %% =====================
+
     User@{ shape: cyl }
     FrontendUI@{ shape: rect }
     BackendAPI_TeamsList@{ shape: rect }
@@ -50,7 +85,10 @@ flowchart TB
     UserDB@{ shape: rect }
     UserSessionData@{ shape: rect }
 
+    %% =====================
     %% Animate all edges
+    %% =====================
+
     e1@{ animate: true }
     e2@{ animate: true }
     e3@{ animate: true }
@@ -237,10 +275,11 @@ The following ER diagram illustrates the relationships between various entities 
 The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access. The backend is protected using role-based access control (RBAC) with the `[Authorize]` attribute.
 
 ### API Endpoints
+
 | **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
 |------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
-| **Get Module Report **          | GET                           | [/ModuleReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
-
+| **Get Teams Report List**          | GET                           | [/TeamsReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Team Report (Members)**      | GET                           | [/teamsreport/{teamId}/TeamReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
 
 
@@ -267,6 +306,7 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 
 # **References**
 
-- **API Documentation**: [Link to email service API documentation].
+- **[API Documentation](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)**
+
 
 
