@@ -29,10 +29,12 @@ The Acting Office Email System is a multi-provider email management platform tha
 
 #### Frontend Modules
 
-| Module | Route | Backend Service | Features |
-|--------|-------|----------------|----------|
-| **Emails Module** | `/admin/emails` | Acting Office Email Service | • View inbox, sent items, drafts<br>• Send and receive emails<br>• Organize folders/labels<br>• Search and filter emails<br>• Immediate email operations |
-| **Communication Module** | `admin/clients` | Acting Office APIs | • **Same features as Emails Module**<br>• View inbox, sent items, drafts<br>• Send and receive emails<br>• **Additional:** Schedule emails for future delivery<br>• **Additional:** Track scheduled email status<br>• **Additional:** Automatic retry on failures |
+| Module                   | Route              | Backend Service             | Features                                                                                                                                                                                                                                                                               |
+| ------------------------ | ------------------ | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Emails Module**        | `/admin/emails`    | Acting Office Email Service | • View inbox, sent items, drafts<br>• Send and receive emails<br>• Organize folders/labels<br>• Search and filter emails<br>• Immediate email operations                                                                                                                               |
+| **Communication Module** | `admin/clients`    | Acting Office APIs          | • **Same features as Emails Module**<br>• View inbox, sent items, drafts<br>• Send and receive emails<br>• **Additional:** Schedule emails for future delivery<br>• **Additional:** Track scheduled email status<br>• **Additional:** Automatic retry on failures                      |
+| **AI Features**          | `/admin/emails` | Acting Office AI Service    | • Translate emails (**any language → English**)<br>• Summarize email content<br>• Tone analysis (professional, neutral, urgent, etc.)<br>• Generate auto-complete suggestions while composing<br>• Generate contextual replies<br>• Generate automatic responses based on email intent |
+
 
 ### 1.3 Key Module Characteristics
 
@@ -68,6 +70,11 @@ graph TB
         AS[Authentication Service]
     end
 
+    %% ───────── AI Layer (Emails Only) ─────────
+    subgraph "AI Features Layer"
+        AI[AI Email Processing Service]
+    end
+
     %% ───────── External Providers ─────────
     subgraph "External Email Providers"
         F[Microsoft Outlook Graph API]
@@ -80,29 +87,33 @@ graph TB
 
     %% Module interactions
     B edge3@-->|Email Actions| E
-    C edge4@-->|Email Operations + Scheduling| D
+    C edge4@-->|Email Operations Scheduling| D
 
-    %% 🔐 Authentication (consistent pattern)
-    E edge5@--> AS
-    AS edge6@--> E
+    %% Authentication
+    E edge5@-->|Validate Token| AS
+    AS edge6@-->|Auth OK| E
 
-    D edge7@--> AS
-    AS edge8@--> D
+    D edge7@-->|Validate Token| AS
+    AS edge8@-->|Auth OK| D
+
+    %% AI features flow (single clean path)
+    E edge16@-->|AI Email Enhancements| AI
+    AI edge17@-->|Processed AI Output| E
 
     %% Provider resolution
     E edge9@-->|Resolve Provider| D
-    E edge10@-->|Outlook Mail Flow| F
-    E edge11@-->|Gmail Mail Flow| G
+    E edge10@-->|Outlook Flow| F
+    E edge11@-->|Gmail Flow| G
 
     %% API operations
-    D edge12@-->|Account Link Unlink| F
-    D edge13@-->|Account Link Unlink| G
-    D edge14@-->|Email Operations| F
-    D edge15@-->|Email Operations| G
+    D edge12@-->|Account Link| F
+    D edge13@-->|Account Link| G
+    D edge14@-->|Email Ops| F
+    D edge15@-->|Email Ops| G
 
     %% Animations
     edge1@{ animate: fast }
-    edge2@{ animate: fast }            
+    edge2@{ animate: fast }
     edge3@{ animate: fast }
     edge4@{ animate: fast }
     edge5@{ animate: fast }
@@ -116,6 +127,9 @@ graph TB
     edge13@{ animate: fast }
     edge14@{ animate: fast }
     edge15@{ animate: fast }
+    edge16@{ animate: fast }
+    edge17@{ animate: fast }
+
 
 
 ```
@@ -138,6 +152,9 @@ graph LR
     ES[Acting Office Email Service]
     AS[Authentication Service]
 
+    %% AI Layer
+    AI[AI Email Processing Service]
+
     %% Decision
     C{Check Provider}
 
@@ -151,9 +168,13 @@ graph LR
     %% Flow
     FE edge1@--> ES
 
-    %% Auth flow (same pattern as reference)
+    %% Auth flow
     ES edge2@--> AS
     AS edge3@--> ES
+
+    %% AI processing
+    ES edge11@--> AI
+    AI edge12@--> ES
 
     %% Provider decision
     ES edge4@--> C
@@ -177,6 +198,8 @@ graph LR
     edge8@{ animate: fast }
     edge9@{ animate: fast }
     edge10@{ animate: fast }
+    edge11@{ animate: fast }
+    edge12@{ animate: fast }
 
 
 ```
@@ -880,6 +903,19 @@ The Acting Office Email System provides RESTful APIs organized into two main cat
 | [`/ScheduleFileDownload`](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) | GET             | Download attachment from a scheduled email      |
 
 
+
+**AI Features (Acting Office AI Services – ConvoMail)**
+| **Endpoint**                                                                                                                               | **HTTP Method** | **Purpose**                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------- |
+| [`/translate`](https://ai.servicesuat.actingoffice.com/swagger/?urls.primaryName=Acting+Office+-+Convomail#/default/suggest_suggest_post)  | POST            | Translate email content from any language to the target language (default Hindi) |
+| [`/summarize`](https://ai.servicesuat.actingoffice.com/swagger/?urls.primaryName=Acting+Office+-+Convomail#/default/suggest_suggest_post)  | POST            | Generate a concise or detailed summary of email content                          |
+| [`/tone`](https://ai.servicesuat.actingoffice.com/swagger/?urls.primaryName=Acting+Office+-+Convomail#/default/suggest_suggest_post)       | POST            | Analyze the tone of an email (professional, neutral, urgent, etc.)               |
+| [`/draftMail`](https://ai.servicesuat.actingoffice.com/swagger/?urls.primaryName=Acting+Office+-+Convomail#/default/suggest_suggest_post)  | POST            | Generate an automatic email response based on the provided content               |
+| [`/replies`](https://ai.servicesuat.actingoffice.com/swagger/?urls.primaryName=Acting+Office+-+Convomail#/default/suggest_suggest_post)    | POST            | Generate contextual reply suggestions for an email                               |
+| [`/completion`](https://ai.servicesuat.actingoffice.com/swagger/?urls.primaryName=Acting+Office+-+Convomail#/default/suggest_suggest_post) | POST            | Provide auto-complete suggestions while composing an email                       |
+
+
+
 ### 6.5 Common API Features
 
 **Authentication:**
@@ -1153,6 +1189,6 @@ All APIs return responses in a standardized format:
 
 ---
 
-*Document Version: 2.0*  
+*Document Version: 1.0*  
 *Last Updated: December 2025*  
 *Acting Office Email System - Technical Documentation*
