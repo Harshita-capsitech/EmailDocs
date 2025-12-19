@@ -182,5 +182,4 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 - **Expected Outcome**: The backend should correctly filter data based on the user and date range. The frontend should display the data without errors.
 
 # **References**
-
-- **API Documentation**: [Link to email service API documentation].
+- **[API Documentation](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM)**
