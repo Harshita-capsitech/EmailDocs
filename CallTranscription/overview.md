@@ -7,7 +7,8 @@
 
 The **Voice Recording & AI Insights** module is designed to enhance user interaction by collecting voice samples and providing comprehensive insights based on those voice recordings. It integrates two key features:
 
-1. **Voice Recording & Collection**: This feature captures the user's voice sample to be used for identity verification or other purposes. It enables secure voice data collection while ensuring compliance with privacy standards. The voice sample is processed, but raw biometric data is never stored or processed directly in the core system.
+1. **Voice Recording & Collection** feature captures the user's voice sample to be used for identity verification or other purposes. This module securely collects voice data while ensuring compliance with privacy standards. The voice sample is processed, but raw biometric data is never stored or processed directly in the core system.
+
    
 2. **AI Insights**: This component handles the transcription of recorded voice data, offering sentiment analysis and emotional tone detection. The insights provided by the AI models help agents and managers improve user experience, call handling, and engagement by interpreting the emotional context behind customer interactions.
 
@@ -54,20 +55,25 @@ flowchart LR
 ```
 
 ---
+```mermaid
+flowchart TD
+    Start([Start]) e1@--> A[User records voice sample
+Voice Module captures audio]
+    A e2@--> B[User Authentication]
+    B e3@--> C[AI processing of audio sample
+Prepare for future verification/analysis
+No verification yet]
+    C e4@--> D[Store processed voice data securely
+in Azure Blob Storage
+No raw biometric data in core system]
+    D e5@--> End([End])
 
-## **Process Flow**
-
-### **Voice Recording & Collection**:
-
-1. **User Interaction**: 
-   - The user records a voice sample for collection. The **Voice Module** captures the audio and transmits it to the **AI Voice Verification** service.
-   
-2. **Processing**: 
-   - The audio sample is processed through AI models. This process does not involve verification but prepares the voice data for any future verification or analysis.
-
-3. **Data Handling**: 
-   - The voice data is stored securely in **Azure Blob Storage**, ensuring that no raw biometric data is stored or processed by the core system.
-
+    e1@{ animation: slow }
+    e2@{ animation: slow }
+    e3@{ animation: slow }
+    e4@{ animation: slow }
+    e5@{ animation: slow }
+```
 ---
 
 ## **ER Diagram**
@@ -151,5 +157,6 @@ This structure ensures minimal data storage to maintain privacy and compliance.
 ---
 
 End of Document
+
 
 
