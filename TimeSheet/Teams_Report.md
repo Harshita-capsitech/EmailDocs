@@ -1,166 +1,236 @@
 
 
-# Team Report Documentation
+# Teams Report Documentation
 
-## Overview
-The **Team Report** module aggregates and presents time usage, efficiency, and availability for each team member. This report is designed for managers and administrators to monitor team performance over a specified period.
+ ### **Overview**:
 
-### Key Features
-- Displays time usage statistics for each team member, including total time, time used, and available time.
-- Calculates team efficiency based on fixed daily time versus actual time used.
-- Allows for filtering by date range, including options to include or exclude weekends.
+The Teams Report system is designed to provide administrators and managers with comprehensive insights into team performance over a specified period. It aggregates various data points, such as total active and idle times, efficiency, and availability, to generate detailed reports for each team member. The system allows for customizable date ranges and the option to include or exclude weekends in the calculations. By providing a clear overview of how teams and their members are performing, the Teams Report helps identify areas for improvement, track productivity, and assess overall team efficiency. This tool ensures that team leaders and managers can make data-driven decisions based on real-time performance metrics.
+
+### Key Features:
+
+- **Team Efficiency**: Shows how effectively the team used its available time.
+- **Customizable Date Range**: Admin can define the start and end dates for the report.
+- **Weekend Inclusion**: Option to include/exclude weekends from the report.
+- **Member Details**: Displays detailed metrics for each team member, including time worked, efficiency, and available time.
+
+---
 
 ## DFD (Data Flow Diagram)
 
 This diagram outlines the data flow between various components of the system, showing how the admin/manager interacts with the UI, the communication and reports modules, and other key features.
 
 ```mermaid
----
-config:
-  layout: dagre
----
 flowchart TB
-    AdminUser["Admin or Manager User"] e1@-.-> UI["Browser UI"]
-    UI e2@--> Reports["Overview & Reports"]
-    UI L_UI_Communication_0@-.-> Communication["Communication"] & Sales["Quotes & Sales"] & UserStats["User Stats"]
-    Reports e6@-.-> Contact["Contact"] & BusinessInvoice["Business Invoice"]
-    Communication e8@==> PhoneCall["Phone Call"]
-    Sales e9@-.-> BusinessInvoice
-    UserStats e10@-.-> Reports
+    %% Main Flow (all edges uniquely identified and animated)
+    User e1@-- "Initiates Request" --> FrontendUI
+    FrontendUI e2@-- "API Call to Get Teams List" --> BackendAPI_TeamsList
+    BackendAPI_TeamsList e3@-- "Retrieve Team Data" --> TeamsDB
+    TeamsDB e4@-- "Return Teams Data" --> BackendAPI_TeamsList
+    BackendAPI_TeamsList e5@-- "Return Team List to Frontend" --> FrontendUI
 
-    style AdminUser fill:#FFFFFF,stroke:#616161
-    style UI stroke:#616161
-    style Reports stroke:#757575
-    style Communication stroke:#616161
-    style Sales stroke:#757575
-    style UserStats stroke:#616161
-    style Contact stroke:#757575
-    style BusinessInvoice stroke:#757575
-    style PhoneCall stroke:#757575
+    FrontendUI e6@-- "Select Team & Request Team Members" --> BackendAPI_TeamMemberReport
+    BackendAPI_TeamMemberReport e7@-- "Fetch Session Data for Team" --> SessionDB
+    SessionDB e8@-- "Return Session Data" --> BackendAPI_TeamMemberReport
+    BackendAPI_TeamMemberReport e9@-- "Calculate Total Time and Efficiency" --> DataAggregation
+    DataAggregation e10@-- "Return Aggregated Data" --> BackendAPI_TeamMemberReport
+    BackendAPI_TeamMemberReport e11@-- "Return Team Member Report to Frontend" --> FrontendUI
+    FrontendUI e12@-- "Display Team Report" --> User
 
-    e1@{ animate: true } 
-    e2@{ animate: true, curve: natural } 
-    L_UI_Communication_0@{ curve: natural, animation: fast } 
-    L_UI_Sales_0@{ animation: fast } 
-    L_UI_UserStats_0@{ animation: fast } 
-    e6@{ animate: true } 
-    L_Reports_BusinessInvoice_0@{ animation: fast } 
-    e8@{ animate: true } 
-    e9@{ animate: true } 
-    e10@{ animate: true, curve: natural }
+    %% Auxiliary Flows (animated dashed)
+    TeamsDB e13@-. "User-Team Relationship Data" .-> UserDB
+    SessionDB e14@-. "User Session Data" .-> UserSessionData
+
+    %% Shapes for clarity
+    User@{ shape: cyl }
+    FrontendUI@{ shape: rect }
+    BackendAPI_TeamsList@{ shape: rect }
+    TeamsDB@{ shape: cyl }
+    BackendAPI_TeamMemberReport@{ shape: rect }
+    SessionDB@{ shape: cyl }
+    DataAggregation@{ shape: rect }
+    UserDB@{ shape: rect }
+    UserSessionData@{ shape: rect }
+
+    %% Animate all edges
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
+    e9@{ animate: true }
+    e10@{ animate: true }
+    e11@{ animate: true }
+    e12@{ animate: true }
+    e13@{ animate: true }
+    e14@{ animate: true }
 
 ```
-## Process Flow
+# Process Flow for Teams Report Workflow
 
-This diagram represents the process flow of how an Admin or Manager accesses the dashboard and views team or member reports. The steps are as follows:
+### 1. User Requests Team Report
+- The **Admin/Manager User** initiates the process by interacting with the **Frontend UI**.
+- The user selects filters like date ranges and whether weekends should be included in the report.
 
-1. **Start**: The process begins when the Admin or Manager initiates the flow.
-2. **Admin/Manager Accesses Dashboard**: The Admin or Manager logs into the system and accesses the dashboard.
-3. **Dashboard Requests Data (API call)**: The dashboard sends a request to the backend API to fetch data.
-4. **Backend Aggregation from UserSessionPageView**: The backend processes and aggregates the data based on the user session.
-5. **Frontend Receives Aggregated Data**: The frontend receives the aggregated data from the backend.
-6. **Display Team/Member Report**: Finally, the frontend displays the report for the team or member based on the received data.
-7. **End**: The process ends once the report is displayed.
+### 2. Fetching Teams List
+- The **Frontend UI** sends a **GET** request to the **Backend API** to fetch the list of teams.
+- The **Backend API** queries the **UserTeamDB** to fetch the list of available teams for the organization.
+- The **Backend API** returns the list of teams back to the **Frontend UI**.
 
+### 3. User Selects Team
+- The **Admin/Manager User** selects a specific team from the displayed list of teams.
+- The **Frontend UI** captures the selected team and prepares for the next request to fetch team member data.
+
+### 4. Fetching Team Member Data
+- The **Frontend UI** sends a **GET** request to the **Backend API** to fetch the members of the selected team.
+- The **Backend API** queries the **UserSessionPageViewDB** to fetch session data (active time, idle time, etc.) for the selected team members.
+
+### 5. Aggregating Data
+- The **Backend API** processes the session data to calculate the following metrics for each team member:
+    - **Time Used**: Total active time spent by the member.
+    - **Time Available**: The total working hours for the member.
+    - **Team Efficiency**: The efficiency based on the ratio of time used to time available.
+
+### 6. Returning Data
+- The backend aggregates the session data and returns the **Team Member Report**, including the calculated metrics.
+- The report is sent back to the **Frontend UI** for display.
+
+### 7. Display Team Report
+- The **Frontend UI** displays the **Team Member Report** to the **Admin/Manager User**.
+- The report includes details like **Time Used**, **Time Available**, and **Team Efficiency** for each member.
+
+### 8. User Interaction and Customization
+- The **Admin/Manager User** can modify filters or select a different team, which triggers a new request to the backend for updated data.
+
+---
 ```mermaid
----
-config:
-  flowchart:
-    curve: monotoneY
-  theme: neutral
-  look: classic
-  layout: dagre
----
-flowchart TB
-    A["Start"] e1@==> step1(["Admin/Manager 
-Accesses Dashboard"])
-    step1 e2@==> step2["Dashboard 
-Requests Data (API call)"]
-    step2 e3@==> step3["Backend Aggregation
-from UserSessionPageView"]
-    step3 e4@==> step4["Frontend 
-Receives Aggregated Data"]
-    step4 e5@==> step5["Display 
-Team/Member Report"]
-    step5 e6@==> B["End"]
+flowchart TD
+    %% User Interaction and Filters
+    A e1@-->|"Initiates Request for Team Report"| B
+    B e2@-->|"Request Teams List"| C
+    C e3@-->|"Query UserTeamDB"| D
+    D e4@-->|"Return List of Teams"| C
+    C e5@-->|"Return Team List to Frontend UI"| B
+    B e6@-->|"User Selects Team"| F
+    F e7@-->|"Request Team Member Report"| G
+    G e8@-->|"Query UserSessionPageViewDB for Session Data"| H
+    H e9@-->|"Return Session Data"| G
+    G e10@-->|"Aggregate Data (Time Used, Time Available, Team Efficiency)"| I
+    I e11@-->|"Return Aggregated Data to Backend API"| G
+    G e12@-->|"Return Aggregated Team Member Report"| B
+    B e13@-->|"Display Team Report"| A
 
-    A@{ shape: sm-circ}
-    step2@{ shape: fr-rect}
-    step3@{ shape: cyl}
-    step4@{ shape: rect}
-    step5@{ shape: curv-trap}
-    B@{ shape: dbl-circ}
-    style step1 fill:#FFFFFF,stroke:#000000
-    style step2 fill:#FFFFFF,stroke:#000000
-    style step3 fill:#FFFFFF,stroke:#000000,stroke-width:2px
-    style step4 fill:#FFFFFF,stroke:#000000
-    style step5 fill:#FFFFFF,stroke:#000000,stroke-width:2px
-    style B stroke:#000000
-
-    e1@{ animate: true } 
-    e2@{ animate: true } 
-    e3@{ animate: true } 
-    e4@{ animate: true } 
-    e5@{ animate: true } 
+    %% Animate all edges
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
     e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
+    e9@{ animate: true }
+    e10@{ animate: true }
+    e11@{ animate: true }
+    e12@{ animate: true }
+    e13@{ animate: true }
+
 
 ```
 
 ## ER Diagram
 ```mermaid
 erDiagram
-    PRACTICE {
-        int practiceId PK "Root Entity"
+    AdminManager {
+        string adminId PK
+        string name
     }
-    APPLICATION_USER {
-        string _id PK
-        string Name
-        string[] Roles
+    Team {
+        string teamId PK
+        string teamName
     }
-    USER_TEAM {
-        string _id PK
-        string TeamName
+    User {
+        string userId PK
+        string userName
     }
-    COMPANY {
-        string _id PK
-        string CompanyName
+    UserSessionPageView {
+        string sessionId PK
+        string userId FK
+        datetime startTime
+        datetime endTime
+        int totalActive
+        int totalIdle
+        int totalTime
     }
-    CONTACT {
-        string _id PK
-        int Type "Lead/Customer"
-    }
-    BUSINESS_INVOICE {
-        string _id PK
-        Amount Amount
-        int Status
-    }
-    PHONE_CALL {
-        string _id PK
-        decimal Duration
+    TeamMemberReport {
+        string reportId PK
+        string userId FK
+        int totalTime
+        int timeUsed
+        int timeAvailable
+        int teamEfficiency
     }
 
-    PRACTICE ||--o{ USER_TEAM : "has team"
-    USER_TEAM ||--o{ APPLICATION_USER : "includes"
-    APPLICATION_USER ||--o{ CONTACT : "manages"
-    COMPANY ||--o{ CONTACT : "has contact"
-    COMPANY ||--o{ BUSINESS_INVOICE : "billed to"
-    APPLICATION_USER ||--o{ PHONE_CALL : "conducts"
+    AdminManager ||--o| Team : manages
+    Team ||--o| User : has
+    User ||--o| UserSessionPageView : logs
+    UserSessionPageView ||--o| TeamMemberReport : generates
+
 ```
-## Entity Definitions
+## Entity Relationship Diagram (ERD) for Team Report Workflow
 
-- **TeamMemberReport**: Represents the individual report for each team member.
-  - `Member`: The team member's name and ID.
-  - `TotalTime`: The total fixed time allocated for the member (8 hours 30 minutes per day).
-  - `TimeUsed`: The actual time the member worked.
-  - `TimeAvailable`: The remaining time the member could potentially work.
-  - `TeamEfficiency`: The efficiency percentage based on actual time worked versus allocated time.
+The following ER diagram illustrates the relationships between various entities in the workflow of generating a team report, specifically focusing on the aggregation of team member activity data.
 
-- **TeamMemberReportSummary**: Represents the overall summary of the team.
-  - `TotalTeams`: The total number of teams.
-  - `TotalHours`: The total available hours for all team members combined.
-  - `AverageHours`: The average hours worked per team member.
-  - `TotalTimeAvailable`: The total available time for the team.
-  - `TeamEfficiency`: The overall efficiency percentage for the team.
+### Entities:
+
+1. **Admin/Manager**:
+   - Represents the user (typically an admin or manager) who initiates the request for the team report.
+   - **Attributes**:
+     - `adminId` (PK): Unique identifier for the admin/manager.
+     - `name`: Name of the admin/manager.
+
+2. **Team**:
+   - Represents a team within an organization. A team contains multiple users (team members).
+   - **Attributes**:
+     - `teamId` (PK): Unique identifier for the team.
+     - `teamName`: Name of the team.
+
+3. **User**:
+   - Represents an individual team member.
+   - **Attributes**:
+     - `userId` (PK): Unique identifier for the user.
+     - `userName`: Name of the user.
+
+4. **UserSessionPageView**:
+   - Represents a user’s session data. This entity tracks a user’s session start and end times, as well as the total active time, idle time, and overall time spent.
+   - **Attributes**:
+     - `sessionId` (PK): Unique identifier for the session.
+     - `userId` (FK): The user who this session belongs to (foreign key).
+     - `startTime`: The session start time.
+     - `endTime`: The session end time.
+     - `totalActive`: Total active time during the session.
+     - `totalIdle`: Total idle time during the session.
+     - `totalTime`: Total time for the session (active + idle).
+
+5. **TeamMemberReport**:
+   - Represents a report that summarizes each team member's performance. It includes metrics such as total time, time used, time available, and team efficiency.
+   - **Attributes**:
+     - `reportId` (PK): Unique identifier for the report.
+     - `userId` (FK): The user associated with this report (foreign key).
+     - `totalTime`: The total available time for the user.
+     - `timeUsed`: The actual time used by the user.
+     - `timeAvailable`: The available time left after deducting time used.
+     - `teamEfficiency`: The efficiency of the user as a percentage of time used vs. available time.
+
+### Relationships:
+
+- **Admin/Manager** manages **Teams**: An admin or manager oversees one or more teams, and they initiate the request for team reports.
+- **Team** contains **Users**: Each team consists of multiple users or team members.
+- **User** has **UserSessionPageView** records: Each user has one or more session records that track their activity.
+- **UserSessionPageView** generates **TeamMemberReport**: The data from a user’s session is aggregated to create a report summarizing their performance.
+
 
 ## Authentication / APIs
 
@@ -171,26 +241,34 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 
 | **Description**                    | **HTTP Method**               | **Endpoint**                                                                 |
 |------------------------------------|-------------------------------|-----------------------------------------------------------------------------|
-| **Get Team Report (Backend)**      | GET                           | [/teamsreport/{teamId}/TeamReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Teams Report List**          | GET                           | [/TeamsReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Get Team Report (Members)**      | GET                           | [/teamsreport/{teamId}/TeamReport](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
 
-## Testing Guide
 
-1. **Unit Tests**:  
-   The backend API can be unit tested by mocking database calls to simulate various scenarios, such as valid/invalid team IDs and date ranges. Ensure that the time calculations are correct, especially for team efficiency.
+## Testing Guide:
 
-2. **Frontend Tests**:  
-   Test the frontend using component testing tools like **React Testing Library**. Ensure that the time filters work correctly and that the team data is fetched and displayed properly.
+### 1. **Data Fetching Tests:**
+   - **Teams List API**: Ensure the list of teams returns correct data.
+   - **Team Report API**: Verify that detailed team data is fetched based on selected team ID and date range.
 
-3. **Integration Tests**:  
-   Ensure that the frontend can communicate with the backend API and that the correct data is displayed on the dashboard.
+### 2. **Frontend Interaction Tests:**
+   - **Team Selection**: Ensure selecting a team fetches and displays its report.
+   - **Date Range**: Validate that the date range selection updates the displayed report.
+   - **Weekend Toggle**: Check if toggling the "Include weekends" option updates the report accordingly.
 
-## References
-- **API Documentation**:  
-   Refer to the backend API documentation for detailed information about the Team Report endpoints and data structures.
-  
-- **Frontend Code**:  
-   The frontend code for fetching and displaying the team report is located in `NewTeamsReport.tsx`. The frontend interacts with the backend API to retrieve and display data based on the selected filters.
+### 3. **Data Integrity Tests:**
+   - **Session Aggregation**: Confirm that total time used is correctly aggregated from session data.
+   - **Efficiency Calculation**: Validate that team efficiency is calculated as a percentage (0-100%).
 
----
+### 4. **Performance Testing:**
+   - Test the system’s performance with larger datasets (many members and a wide date range).
+
+### 5. **Error Handling:**
+   - Verify that the system displays appropriate error messages for invalid inputs or backend failures without crashing.
+
+## **References**
+
+- **API Documentation**: [Link to email service API documentation].
+
 
