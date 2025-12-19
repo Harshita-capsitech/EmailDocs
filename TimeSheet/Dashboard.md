@@ -6,16 +6,6 @@ The **Timesheet Dashboard** is an essential tool for administrative management, 
 With features like customizable date ranges and team-specific filters, the Timesheet Dashboard offers flexibility in analyzing data at both the individual and team levels. It allows users to view aggregate statistics on key business metrics such as the number of leads, call volumes, emails, and website interactions, as well as providing more detailed insights through various reports and user activity tables. Whether it's tracking time worked, monitoring sales progress, or reviewing communication activity, the dashboard ensures that managers have a comprehensive view of their team's performance and the overall operational efficiency of the organization.
 
 
-## Components
-
-The dashboard is divided into the following primary components:
-
-1. **Lead Report**: Provides insights into the number of leads, lead conversions, and lost leads.
-2. **Call Report**: Displays the total number of calls, the number of incoming and outgoing calls, and the total call duration.
-3. **Email Report**: Shows the total number of emails, including inbox, sent, and draft emails.
-4. **Website Queries Report**: Tracks website queries, including callback requests, contact queries, and service requests.
-
-
 # Data Flow Diagram (DFD)
 
 This diagram illustrates the flow of data between different components of the Timesheet Dashboard, starting from the User interaction to the final Response returned to the Frontend.
@@ -429,18 +419,7 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
    - **Test Cases**:  
      - Ensure that the `CommunicationOverview` component accurately reflects call data (incoming, outgoing) for the selected date range.
      - Verify that the `ReviewsCard` displays review statistics (total reviews, accepted, pending, rejected) correctly.
-
-### **Mock Data for Testing**
-
-- **Mock Call Data for Communication Overview**  
-  For testing `CommunicationOverview` component:
-  ```javascript
-  const mockData = [
-    { key: 'Jan 2024', incoming: 200, outgoing: 150 },
-    { key: 'Feb 2024', incoming: 180, outgoing: 130 },
-    { key: 'Mar 2024', incoming: 220, outgoing: 180 }
-  ];
-
+     
 ---
 
 ##  References
@@ -450,6 +429,7 @@ This concludes the **Authentication/API Endpoints** documentation for the Timesh
 - **API Documentation**: [Link to AO API documentation].
 
 ---
+
 
 
 
