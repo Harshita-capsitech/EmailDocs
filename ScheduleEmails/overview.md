@@ -359,7 +359,7 @@ Represents a conversation thread of emails.
 | **Update Schedule**                     | POST            | [/UpdateSchedule/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 | **Get Schedule by ID**                  | GET             | [/schedule/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 | **Send Scheduled Email**                | POST            | [/SendSchedule/{id}](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
-| **Download Schedule File**              | GET             | [/ScheduleFileDownload](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
+| **Download Attachment**                 | GET             | [/ScheduleFileDownload](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM) |
 
 
 ---
@@ -391,9 +391,7 @@ Represents a conversation thread of emails.
 
 ## **References**
 
-- **Email Service API Documentation**: [Link to email service API documentation].
-- **Fluent UI Documentation**: [Link to Fluent UI documentation].
-- **Capsitech Storage and Services**: [Link to Capsitech documentation].
+- **API Documentation**: [Link to email service API documentation].
 
 ---
 
