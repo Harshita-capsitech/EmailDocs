@@ -227,16 +227,20 @@ erDiagram
 ---
 
 ## Authentication / APIs
-- **Authentication**: 
-  - The system uses **OAuth** for secure email sending via Gmail or Outlook.
-  - The **JWT tokens** are used for authentication to interact with the email services.
+
+### **Authentication**
+
+- **Role-Based Access Control (RBAC)**: The **Email Module** uses RBAC for authentication and authorization. Access to this module is restricted using `[Authorize(Roles = "ADMIN,MANAGER,STAFF")]`, ensuring that only users with **ADMIN**, **MANAGER**, or **STAFF** roles can access it.
+
   
-- **APIs**:
-  - **POST /SaveSchedule**: Saves the scheduled email.
-  - **POST /UpdateSchedule**: Updates an existing scheduled email.
-  - **GET /GetScheduleEmails**: Fetches a list of scheduled emails.
-  - **POST /SendSchedule**: Sends the scheduled email through external APIs.
-  - **GET /ScheduleFileDownload**: Allows users to download attachments of a scheduled email.
+| **Description**                          | **HTTP Method** | **Endpoint URL**                                                                 |
+|------------------------------------------|-----------------|----------------------------------------------------------------------------------|
+| **Save the scheduled email**             | POST            | [POST /SaveSchedule](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM#/SaveSchedule) |
+| **Update an existing scheduled email**   | POST            | [POST /UpdateSchedule](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM#/UpdateSchedule) |
+| **Fetch a list of scheduled emails**     | GET             | [GET /GetScheduleEmails](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM#/GetScheduleEmails) |
+| **Send the scheduled email through external APIs** | POST            | [POST /SendSchedule](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM#/SendSchedule) |
+| **Download attachments of a scheduled email** | GET             | [GET /ScheduleFileDownload](https://apiuat.actingoffice.com/api-docs/index.html?urls.primaryName=Acting+Office+-+CRM#/ScheduleFileDownload) |
+
 
 ---
 
@@ -252,9 +256,8 @@ erDiagram
 - **EmailService**: Core service that interacts with Gmail, Outlook, and other external email APIs.
 - **OAuth Authentication**: OAuth 2.0 for secure email service access.
 
-
-
 ---
+
 
 
 
