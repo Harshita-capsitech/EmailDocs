@@ -2,27 +2,55 @@
 # User Report Documentation
 
 ## Overview
-The **User Report** API and frontend module allows the generation of detailed reports related to user activities, communications, and other relevant metrics across various application modules such as Tax and Accounts, Payroll, Bookkeeping, CRM, and more.
 
-This document covers:
-- **Backend Implementation**: RESTful API to fetch user-specific reports.
-- **Frontend Implementation**: Components to display user reports interactively in the admin dashboard.
 
+The workflow for the User Report involves retrieving and presenting detailed timesheet information for users, including various modules like Tax & Accounts, Payroll, Bookkeeping, CRM, and others. The frontend interfaces with the backend API to filter, retrieve, and display the data.
+
+The React frontend requests user timesheet data, passing filters such as userId, fromDate, toDate, includeWeekends, and sorting preferences. The backend API (/userreport) processes this request by querying a MongoDB database, filtering data based on the provided parameters, aggregating the data, and then sending it back to the frontend. The frontend then displays this data in a paginated table with additional features such as sorting, filtering by users, and viewing details for specific modules.
 ## DFD (Data Flow Diagram)
-
-The Data Flow Diagram (DFD) illustrates the interaction between the Admin User, Frontend UI, Backend API, and User Report Data.
 
 ```mermaid
 flowchart TD
-    AdminUser["Admin User"]
-    API["Backend API"]
-    UI["Frontend UI"]
-    UserReport["User Report Data"]
-    
-    AdminUser --> UI
-    UI --> API
-    API --> UserReport
+
+    %% MAIN ACTORS
+    adminStart("ADMIN")
+    frontend("REACT FRONTEND<br/>(User Interface)")
+
+    apiCtrl("API CONTROLLER<br/>[ADMIN Auth]")
+
+    %% Processing Steps
+    validate("Validate<br/>Parameters")
+    buildFilter("Build<br/>Filter")
+    filterWeekend("Weekend<br/>Filter")
+
+    mongodb("MONGODB<br/>AGGREGATION")
+    userSession("UserSessionPageView<br/>• UserId • CompanyId • Date<br/>• Module • TotalActive(sec)")
+    companies("Companies<br/>• Name • CompanyNumber")
+
+    apiResponse("API RESPONSE<br/>Items: [ {company, times} ]<br/>TotalRecords: 42<br/>Total: {sums}")
+    display("FRONTEND DISPLAY<br/>• Convert sec→time<br/>• Render table<br/>• Show totals<br/>• Enable drill-down")
+
+    adminEnd("ADMIN<br/>Views Report")
+
+    %% ANIMATED FLOW
+    adminStart -->|"Select: User, Date Range,<br/>Include Weekends, Sort"| frontend
+    frontend -->|"API Request<br/>GET /userreport { userId, ... }"| apiCtrl
+    apiCtrl -->|"Validate & Filter"| validate
+    apiCtrl -->|"Build Filter"| buildFilter
+    apiCtrl -->|"Weekend Filter"| filterWeekend
+    filterWeekend --> mongodb
+    mongodb -->|"Lookup Session Data"| userSession
+    mongodb -->|"Join"| companies
+    mongodb -->|"Aggregate, Sort, Paginate"| apiResponse
+    apiResponse -->|"Return [companies, times, totals]"| display
+    display -->|"Results Table / Drill-down"| adminEnd
+
+    %% GROUP FILTERING SUBGRAPH (kept for logic clarity)
+    subgraph FilterSteps["Parameter Filtering"]
+      validate -.-> buildFilter -.-> filterWeekend
+    end
 ```
+
 
 # Process Flow for User Report Display
 
@@ -68,48 +96,64 @@ flowchart TB
 ## ER Diagram
 ```mermaid
 erDiagram
-    PRACTICE {
-        int practiceId PK "Root Entity"
+    USER {
+        string id
+        string name
     }
-    APPLICATION_USER {
-        string _id PK
-        string Name
-        string[] Roles
+    TIMESHEET {
+        string userId
+        datetime date
+        string module
+        long totalActive
     }
-    USER_TEAM {
-        string _id PK
-        string TeamName
+    USER ||--o{ TIMESHEET: has
+    TIMESHEET ||--o| MODULE: belongs_to
+    MODULE {
+        string name
     }
-    COMPANY {
-        string _id PK
-        string CompanyName
+    REPORT {
+        string userId
+        long totalTime
     }
-    CONTACT {
-        string _id PK
-        int Type "Lead/Customer"
-    }
-    BUSINESS_INVOICE {
-        string _id PK
-        Amount Amount
-        int Status
-    }
-    PHONE_CALL {
-        string _id PK
-        decimal Duration
-    }
+    USER ||--o| REPORT: generates
 
-    PRACTICE ||--o{ USER_TEAM : "has team"
-    USER_TEAM ||--o{ APPLICATION_USER : "includes"
-    APPLICATION_USER ||--o{ CONTACT : "manages"
-    COMPANY ||--o{ CONTACT : "has contact"
-    COMPANY ||--o{ BUSINESS_INVOICE : "billed to"
-    APPLICATION_USER ||--o{ PHONE_CALL : "conducts"
 ```
 
-## Entity Definition
-- **User**: Represents the user initiating the report. Contains properties like `userId`, `userName`, and associated modules for tracking activities.
-- **Report**: Contains the aggregated report data for each user, including hours spent across various modules like Tax and Accounts, Payroll, CRM, etc.
-- **Activity**: Represents individual activities by the user, such as time spent on different application modules.
+## Entity Definitions
+
+### 1. **User**
+Represents an individual user for whom the timesheet data is retrieved. Each user has an associated unique identifier (`id`) and a name.
+
+- **Attributes**:
+  - `id` (string): Unique identifier for the user.
+  - `name` (string): The name of the user.
+
+### 2. **Timesheet**
+Represents an individual timesheet entry for a user. Each entry contains the user's ID, the date of the timesheet entry, the module associated with the entry, and the total active time spent.
+
+- **Attributes**:
+  - `userId` (string): The ID of the user associated with this timesheet entry.
+  - `date` (datetime): The date when the timesheet entry was logged.
+  - `module` (string): The module (e.g., Tax & Accounts, Payroll, etc.) associated with this timesheet entry.
+  - `totalActive` (long): The total time (in seconds or minutes) the user has spent on this module.
+
+### 3. **Module**
+Represents the different application modules that a user can work on, such as Tax & Accounts, Payroll, CRM, etc.
+
+- **Attributes**:
+  - `name` (string): The name of the module (e.g., "Tax & Accounts", "Payroll").
+
+### 4. **Report**
+Represents the final aggregated timesheet data for a user. This is a summary of the total time spent by a user across various modules over a defined period.
+
+- **Attributes**:
+  - `userId` (string): The ID of the user for whom the report is generated.
+  - `totalTime` (long): The total time (sum of timesheet entries) the user has spent across all modules.
+
+## Relationships
+- A **User** can have multiple **Timesheet** entries.
+- A **Timesheet** entry belongs to one **Module**.
+- A **User** generates one **Report**, which aggregates the total time from their timesheet entries.
 
 ## Authentication / APIs
 
@@ -137,6 +181,6 @@ The **Team Report** endpoint requires an **ADMIN** or **MANAGER** role to access
 - **Scenario**: Requesting a report for a specific user for the past month.
 - **Expected Outcome**: The backend should correctly filter data based on the user and date range. The frontend should display the data without errors.
 
-## References
-- **API Documentation**: [Backend API documentation link]
-- **Frontend Implementation**: [Link to frontend component files]
+## **References**
+
+- **API Documentation**: [Link to email service API documentation].
